@@ -10,6 +10,7 @@
 | [`SPEC.md`](SPEC.md) | **현재 확정 스코프(WHAT/NOW)** — MVP 규칙·화면·엣지 | 구현·기능 결정 시 | 중간 |
 | [`SCREEN-FLOW.md`](SCREEN-FLOW.md) | **화면 전이·상태 로직** | 화면/플로우 작업 시 | 중간 |
 | [`DESIGN-BRIEF.md`](DESIGN-BRIEF.md) | **시각·인터랙션·톤 방향(HOW-it-feels)** — 스타일·팔레트·타이포·모션·톤/만트라·상태 시각 규약 | 디자인·와이어·프론트 작업 시 | 중간 |
+| [`DESIGN-TOKENS.md`](DESIGN-TOKENS.md) | **디자인 토큰 구체값·구조·변환(HOW-it-computes)** — primitive/semantic/mode 3계층 · DTCG JSON 기계 소스 · 스택 중립 | 토큰·컴포넌트·프론트 구현 시 | 중간 |
 | [`DECISIONS.md`](DECISIONS.md) | **결정 근거 아카이브(WHY-detail, ADR)** | "왜 X를 택했나" 조회 시(해당 D-번호만) | 참조용 |
 | `_archive/` | 원본 스냅샷 (히스토리 대체) | 원문 서술이 필요할 때만 | — |
 
@@ -34,6 +35,7 @@ DECISIONS.md (근거)   ─┘   단, 불변 규칙(§2 One Task 등)은 SPEC도
 | 각 결정의 근거 | `DECISIONS.md D-xx` | SPEC/CLAUDE는 결론만 + D-번호 링크 |
 | 화면 전이·P이슈 | `SCREEN-FLOW.md` | 확정된 규칙은 SPEC로 승격 |
 | 시각·디자인 방향 | `DESIGN-BRIEF.md DB-xx` | 미적 선택이 SPEC과 어긋나면 SPEC이 최신 |
+| 디자인 토큰 구체값·구조 | `DESIGN-TOKENS.md`(값·DTCG) | BRIEF §3은 *의미/방향*만, 값은 TOKENS가 정본. 방향이 어긋나면 BRIEF가 최신 |
 | 플랫폼·기술 스택 | `DECISIONS.md D-26`(근거) → `TECH-SPEC.md`(명세·예정) | SPEC/ROUTES는 결론만 참조 |
 
 ## 작성 규칙 (AI 컨텍스트 절약)
