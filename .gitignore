@@ -1,2 +1,28 @@
 컴페이스 와이어프레임.html
 컴페이스 와이어프레임_files/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.vercel
+*.tsbuildinfo
+coverage
+
+.claude/settings.local.json
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
