@@ -57,3 +57,4 @@ pnpm build && pnpm test src/storage src/types
 ## Changelog
 
 - **v0.1** — 최초 작성, 상세 완료(착수 대상 위상).
+- **v0.2** — 구현 완료. 이 문서 자체의 체크리스트와 TECH-SPEC §4 필드명이 상충하는 두 지점을 TECH-SPEC(필드명 SSOT) 우선으로 해소: ① `blocks`는 `date` 필드가 없어 `date` 인덱스를 생성하지 않음(`taskId` 인덱스만) — "energyCells/blocks/sessions에 date 인덱스" 항목은 `blocks` 제외. ② `predictions`는 `id` 필드가 없고 `blockId`만 있어 `keyPath: 'blockId'` 사용 — "keyPath id" 항목은 `predictions` 제외. code-reviewer 검토 반영: `persist.ts` 단위 테스트 추가, `findByDate`의 스토어 허용 목록에 `idb-schema.ts` 참조 주석 추가.
