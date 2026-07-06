@@ -36,7 +36,7 @@ DECISIONS.md (근거)   ─┘   단, 불변 규칙(§2 One Task 등)은 SPEC도
 | 화면 전이·P이슈 | `SCREEN-FLOW.md` | 확정된 규칙은 SPEC로 승격 |
 | 시각·디자인 방향 | `DESIGN-BRIEF.md DB-xx` | 미적 선택이 SPEC과 어긋나면 SPEC이 최신 |
 | 디자인 토큰 구체값·구조 | `DESIGN-TOKENS.md`(값·DTCG) | BRIEF §3은 *의미/방향*만, 값은 TOKENS가 정본. 방향이 어긋나면 BRIEF가 최신 |
-| 플랫폼·기술 스택 | `DECISIONS.md D-26`(근거) → `TECH-SPEC.md`(명세·예정) | SPEC/ROUTES는 결론만 참조 |
+| 플랫폼·기술 스택 | `DECISIONS.md D-26`(근거) → `TECH-SPEC.md`(명세, 확정) | SPEC/ROUTES는 결론만 참조 |
 
 ## 작성 규칙 (AI 컨텍스트 절약)
 
