@@ -1,0 +1,25 @@
+.cell {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  transition: box-shadow var(--duration-cell) var(--easing-quiet);
+}
+
+/* evidence.fill은 완료/미완료/방전 어떤 경우든 동일하다 — 이 규칙이 유일한 색 선언이다(DESIGN-TOKENS §5-1) */
+.filled {
+  background-color: var(--evidence-fill);
+  border-color: transparent;
+}
+
+/* 방금 채운 칸의 순간 강조만(DESIGN-TOKENS §2-3) — evidence.fill 자체는 바뀌지 않는다 */
+.justFilled {
+  box-shadow: 0 0 0 2px var(--evidence-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    transition-duration: 0s;
+  }
+}

@@ -1,0 +1,19 @@
+/*
+ * 방전 모드는 이 파일이 아니라 상위 DOM의 [data-mode="discharge"] 속성이 처리한다
+ * (tokens.generated.css의 모드 오버레이 — DESIGN-TOKENS §4-2). 이 컴포넌트는 모드를 모른다,
+ * semantic 변수만 참조하면 조상 스코프가 알아서 값을 바꿔치기한다.
+ */
+.card {
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--elevation-card);
+  padding: var(--space-7);
+}
+
+.title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-2xl);
+  color: var(--text-strong);
+}

@@ -1,0 +1,521 @@
+{
+  "$description": "컴페이스 디자인 토큰 — DESIGN-BRIEF §3 승격. 스택 중립. hex 옆 // 는 원시 rgb.",
+  "color": {
+    "$type": "color",
+    "paper": {
+      "$value": "#E7DECF"
+    },
+    "cream": {
+      "50": {
+        "$value": "#FFFDF7"
+      },
+      "100": {
+        "$value": "#FCF9F2"
+      },
+      "200": {
+        "$value": "#F6F1E6"
+      },
+      "300": {
+        "$value": "#F2ECDF"
+      },
+      "400": {
+        "$value": "#F0E7D6"
+      }
+    },
+    "sand": {
+      "200": {
+        "$value": "#EADFCB"
+      }
+    },
+    "line": {
+      "100": {
+        "$value": "#E7DDCB"
+      },
+      "200": {
+        "$value": "#E2D8C6"
+      },
+      "300": {
+        "$value": "#D8CCB6"
+      }
+    },
+    "ink": {
+      "200": {
+        "$value": "#C4B7A2"
+      },
+      "300": {
+        "$value": "#B5A78E"
+      },
+      "400": {
+        "$value": "#A0937F"
+      },
+      "500": {
+        "$value": "#8C8070"
+      },
+      "600": {
+        "$value": "#7E7263"
+      },
+      "800": {
+        "$value": "#4A423B"
+      },
+      "900": {
+        "$value": "#3F382F"
+      }
+    },
+    "accent": {
+      "500": {
+        "$value": "#E79155"
+      },
+      "600": {
+        "$value": "#C9743C"
+      },
+      "700": {
+        "$value": "#9A6A38"
+      },
+      "on": {
+        "$value": "#FFF7EE"
+      },
+      "tint": {
+        "100": {
+          "$value": "#F7E7D4"
+        },
+        "200": {
+          "$value": "#F3DDC8"
+        }
+      },
+      "glow": {
+        "$value": "#D88C50"
+      }
+    },
+    "energy": {
+      "fill": {
+        "$value": "#E79B62"
+      },
+      "ring": {
+        "$value": "#C9743C"
+      }
+    },
+    "chip": {
+      "bg": {
+        "$value": "#F1E8D8"
+      },
+      "line": {
+        "$value": "#E4DAC7"
+      }
+    },
+    "bonus": {
+      "bg": {
+        "$value": "#FCF6EC"
+      },
+      "line": {
+        "$value": "#EAD4B6"
+      }
+    },
+    "ok": {
+      "500": {
+        "$value": "#9DBF8C"
+      },
+      "700": {
+        "$value": "#557049"
+      },
+      "bg": {
+        "$value": "#EAF0E5"
+      },
+      "line": {
+        "$value": "#D7E5CF"
+      }
+    },
+    "carry": {
+      "500": {
+        "$value": "#A99BC4"
+      },
+      "700": {
+        "$value": "#6B5E86"
+      },
+      "bg": {
+        "$value": "#F0EAF4"
+      }
+    },
+    "calm": {
+      "500": {
+        "$value": "#8494A0"
+      },
+      "700": {
+        "$value": "#7C8892"
+      },
+      "$description": "⚠️ 미정 · 브리프(§3/§7) 소유. 세이지(green-gray) 지향. 아래 블루그레이는 와이어 관측값(미채택) — 브리프 확정 시 교체.",
+      "bg": {
+        "$value": "#DFE6EA"
+      },
+      "surface": {
+        "$value": "#ECE7DC"
+      },
+      "line": {
+        "$value": "#DDD4C4"
+      }
+    },
+    "dark": {
+      "bg": {
+        "$value": "#3A332C"
+      },
+      "bgDeep": {
+        "$value": "#322C26"
+      },
+      "surface": {
+        "$value": "#433A30"
+      },
+      "line": {
+        "$value": "#514738"
+      },
+      "amber": {
+        "$value": "#C9A878"
+      },
+      "timer": {
+        "$value": "#F1E8D6"
+      },
+      "text": {
+        "$value": "#C4B6A0"
+      },
+      "muted": {
+        "$value": "#8A7B64"
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "serif": {
+        "$value": [
+          "Gowun Batang",
+          "serif"
+        ]
+      },
+      "sans": {
+        "$value": [
+          "Gowun Dodum",
+          "system-ui",
+          "sans-serif"
+        ]
+      }
+    },
+    "size": {
+      "$type": "dimension",
+      "xs": {
+        "$value": "0.6875rem"
+      },
+      "sm": {
+        "$value": "0.75rem"
+      },
+      "base": {
+        "$value": "0.8125rem"
+      },
+      "md": {
+        "$value": "0.875rem"
+      },
+      "lg": {
+        "$value": "1rem"
+      },
+      "xl": {
+        "$value": "1.1875rem"
+      },
+      "2xl": {
+        "$value": "1.375rem"
+      },
+      "3xl": {
+        "$value": "1.5rem"
+      },
+      "timer": {
+        "$value": "6rem"
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "xs": {
+      "$value": "4px"
+    },
+    "md": {
+      "$value": "13px"
+    },
+    "lg": {
+      "$value": "16px"
+    },
+    "xl": {
+      "$value": "18px"
+    },
+    "2xl": {
+      "$value": "22px"
+    },
+    "pill": {
+      "$value": "999px"
+    }
+  },
+  "space": {
+    "1": {
+      "$value": "4px"
+    },
+    "2": {
+      "$value": "6px"
+    },
+    "3": {
+      "$value": "8px"
+    },
+    "4": {
+      "$value": "12px"
+    },
+    "5": {
+      "$value": "16px"
+    },
+    "6": {
+      "$value": "20px"
+    },
+    "7": {
+      "$value": "24px"
+    },
+    "8": {
+      "$value": "30px"
+    },
+    "$type": "dimension"
+  },
+  "elevation": {
+    "$type": "shadow",
+    "inner": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "4px",
+        "blur": "14px",
+        "spread": "0",
+        "color": "rgba(74,66,59,0.05)"
+      }
+    },
+    "soft": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "12px",
+        "blur": "30px",
+        "spread": "0",
+        "color": "rgba(74,66,59,0.10)"
+      }
+    },
+    "card": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "14px",
+        "blur": "36px",
+        "spread": "0",
+        "color": "rgba(74,66,59,0.12)"
+      }
+    },
+    "popover": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "10px",
+        "blur": "24px",
+        "spread": "0",
+        "color": "rgba(74,66,59,0.16)"
+      }
+    },
+    "cta": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "8px",
+        "blur": "18px",
+        "spread": "0",
+        "color": "rgba(216,140,80,0.35)"
+      }
+    },
+    "sheet": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "-14px",
+        "blur": "30px",
+        "spread": "0",
+        "color": "rgba(0,0,0,0.28)"
+      }
+    }
+  },
+  "duration": {
+    "$type": "duration",
+    "fast": {
+      "$value": "150ms"
+    },
+    "cell": {
+      "$value": "260ms"
+    }
+  },
+  "easing": {
+    "$type": "cubicBezier",
+    "quiet": {
+      "$value": [
+        0.16,
+        1,
+        0.3,
+        1
+      ]
+    }
+  },
+  "semantic": {
+    "$type": "color",
+    "surface": {
+      "page": {
+        "$value": "{color.paper}"
+      },
+      "base": {
+        "$value": "{color.cream.200}"
+      },
+      "raised": {
+        "$value": "{color.cream.100}"
+      },
+      "float": {
+        "$value": "{color.cream.50}"
+      },
+      "subtle": {
+        "$value": "{color.cream.300}"
+      }
+    },
+    "border": {
+      "default": {
+        "$value": "{color.line.200}"
+      },
+      "raised": {
+        "$value": "{color.line.100}"
+      },
+      "dashed": {
+        "$value": "{color.line.300}"
+      }
+    },
+    "text": {
+      "strong": {
+        "$value": "{color.ink.900}"
+      },
+      "primary": {
+        "$value": "{color.ink.800}"
+      },
+      "secondary": {
+        "$value": "{color.ink.500}"
+      },
+      "label": {
+        "$value": "{color.ink.400}"
+      },
+      "quiet": {
+        "$value": "{color.ink.300}"
+      }
+    },
+    "action": {
+      "DEFAULT": {
+        "$value": "{color.accent.500}"
+      },
+      "text": {
+        "$value": "{color.ink.900}"
+      },
+      "ink": {
+        "$value": "{color.accent.700}"
+      },
+      "tint": {
+        "$value": "{color.accent.tint.200}"
+      }
+    },
+    "chip": {
+      "bg": {
+        "$value": "{color.chip.bg}"
+      },
+      "line": {
+        "$value": "{color.chip.line}"
+      }
+    },
+    "evidence": {
+      "fill": {
+        "$value": "{color.energy.fill}"
+      },
+      "ring": {
+        "$value": "{color.energy.ring}"
+      }
+    },
+    "bonus": {
+      "bg": {
+        "$value": "{color.bonus.bg}"
+      },
+      "line": {
+        "$value": "{color.bonus.line}"
+      }
+    },
+    "state": {
+      "done": {
+        "mark": {
+          "$value": "{color.ok.500}"
+        },
+        "text": {
+          "$value": "{color.ok.700}"
+        },
+        "bg": {
+          "$value": "{color.ok.bg}"
+        }
+      },
+      "carry": {
+        "mark": {
+          "$value": "{color.carry.500}"
+        },
+        "text": {
+          "$value": "{color.carry.700}"
+        },
+        "bg": {
+          "$value": "{color.carry.bg}"
+        }
+      }
+    }
+  },
+  "mode-focus": {
+    "$description": "집중/일시정지 다크 오버레이. action·evidence는 재지정 금지.",
+    "$type": "color",
+    "surface": {
+      "base": {
+        "$value": "{color.dark.bg}"
+      },
+      "raised": {
+        "$value": "{color.dark.surface}"
+      }
+    },
+    "border": {
+      "default": {
+        "$value": "{color.dark.line}"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "{color.dark.text}"
+      },
+      "secondary": {
+        "$value": "{color.dark.muted}"
+      },
+      "timer": {
+        "$value": "{color.dark.timer}"
+      }
+    },
+    "action": {
+      "ink": {
+        "$value": "{color.dark.amber}"
+      }
+    }
+  },
+  "mode-discharge": {
+    "$description": "방전 쿨 오버레이(크롬만). action(오렌지 CTA)·evidence(에너지)는 재지정 금지.",
+    "$type": "color",
+    "surface": {
+      "base": {
+        "$value": "{color.calm.surface}"
+      }
+    },
+    "border": {
+      "default": {
+        "$value": "{color.calm.line}"
+      }
+    },
+    "action": {
+      "tint": {
+        "$value": "{color.calm.bg}"
+      },
+      "ink": {
+        "$value": "{color.calm.700}"
+      }
+    }
+  }
+}

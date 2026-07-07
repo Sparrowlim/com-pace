@@ -1,0 +1,34 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* README §0-1② 터치 타깃 ≥44×44 CSS px */
+  min-width: 44px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-quiet),
+    color var(--duration-fast) var(--easing-quiet);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--action-ink);
+  outline-offset: 2px;
+}
+
+.default {
+  background-color: var(--chip-bg);
+  color: var(--text-primary);
+  border-color: var(--chip-line);
+}
+
+/* DESIGN-TOKENS §3 action.tint — 선택된 옵션 바탕 */
+.selected {
+  background-color: var(--action-tint);
+  color: var(--action-ink);
+  border-color: transparent;
+}

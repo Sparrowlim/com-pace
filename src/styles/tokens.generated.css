@@ -1,0 +1,88 @@
+/**
+ * AUTO-GENERATED — 직접 수정 금지.
+ * 소스: tokens/design-tokens.json (DESIGN-TOKENS.md §9와 동기화 유지)
+ * 재생성: npm run tokens:build
+ */
+
+:root {
+  --font-family-serif: 'Gowun Batang', serif;
+  --font-family-sans: 'Gowun Dodum', system-ui, sans-serif;
+  --font-size-xs: 0.6875rem;
+  --font-size-sm: 0.75rem;
+  --font-size-base: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.1875rem;
+  --font-size-2xl: 1.375rem;
+  --font-size-3xl: 1.5rem;
+  --font-size-timer: 6rem;
+  --radius-xs: 4px;
+  --radius-md: 13px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 30px;
+  --elevation-inner: 0 4px 14px 0 rgba(74,66,59,0.05);
+  --elevation-soft: 0 12px 30px 0 rgba(74,66,59,0.10);
+  --elevation-card: 0 14px 36px 0 rgba(74,66,59,0.12);
+  --elevation-popover: 0 10px 24px 0 rgba(74,66,59,0.16);
+  --elevation-cta: 0 8px 18px 0 rgba(216,140,80,0.35);
+  --elevation-sheet: 0 -14px 30px 0 rgba(0,0,0,0.28);
+  --duration-fast: 150ms;
+  --duration-cell: 260ms;
+  --easing-quiet: cubic-bezier(0.16, 1, 0.3, 1);
+  --surface-page: #e7decf;
+  --surface-base: #f6f1e6;
+  --surface-raised: #fcf9f2;
+  --surface-float: #fffdf7;
+  --surface-subtle: #f2ecdf;
+  --border-default: #e2d8c6;
+  --border-raised: #e7ddcb;
+  --border-dashed: #d8ccb6;
+  --text-strong: #3f382f;
+  --text-primary: #4a423b;
+  --text-secondary: #8c8070;
+  --text-label: #a0937f;
+  --text-quiet: #b5a78e;
+  --action: #e79155;
+  --action-text: #3f382f;
+  --action-ink: #9a6a38;
+  --action-tint: #f3ddc8;
+  --chip-bg: #f1e8d8;
+  --chip-line: #e4dac7;
+  --evidence-fill: #e79b62;
+  --evidence-ring: #c9743c;
+  --bonus-bg: #fcf6ec;
+  --bonus-line: #ead4b6;
+  --state-done-mark: #9dbf8c;
+  --state-done-text: #557049;
+  --state-done-bg: #eaf0e5;
+  --state-carry-mark: #a99bc4;
+  --state-carry-text: #6b5e86;
+  --state-carry-bg: #f0eaf4;
+}
+
+[data-mode="focus"] {
+  --surface-base: #3a332c;
+  --surface-raised: #433a30;
+  --border-default: #514738;
+  --text-primary: #c4b6a0;
+  --text-secondary: #8a7b64;
+  --text-timer: #f1e8d6;
+  --action-ink: #c9a878;
+}
+
+[data-mode="discharge"] {
+  --surface-base: #ece7dc;
+  --border-default: #ddd4c4;
+  --action-tint: #dfe6ea;
+  --action-ink: #7c8892;
+}

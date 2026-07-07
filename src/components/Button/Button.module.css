@@ -1,0 +1,39 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px; /* README §0-1② 터치 타깃 ≥44×44 CSS px */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-lg);
+  border: none;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--easing-quiet),
+    background-color var(--duration-fast) var(--easing-quiet);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--action-ink);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* DESIGN-TOKENS §5-3 — action(테라코타)은 즉시성의 순간에만, 보조는 아웃라인 */
+.primary {
+  background-color: var(--action);
+  color: var(--action-text);
+}
+
+.secondary {
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}

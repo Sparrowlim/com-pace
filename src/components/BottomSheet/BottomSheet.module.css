@@ -1,0 +1,10 @@
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--surface-raised);
+  box-shadow: var(--elevation-sheet);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding: var(--space-7);
+}

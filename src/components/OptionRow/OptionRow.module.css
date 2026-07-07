@@ -1,0 +1,27 @@
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px; /* README §0-1② 터치 타깃 ≥44×44 CSS px */
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-quiet);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--action-ink);
+  outline-offset: 2px;
+}
+
+/* CLAUDE.md §2 결정 피로 차단 — 닫힌 2~3지선다에서 선택된 항만 action.tint로 표시 */
+.selected {
+  background-color: var(--action-tint);
+  border-color: transparent;
+}
