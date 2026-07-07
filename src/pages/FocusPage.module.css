@@ -21,3 +21,46 @@
   font-size: var(--font-size-timer);
   color: var(--text-timer, var(--text-primary));
 }
+
+.tapArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-7);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-6);
+  touch-action: none;
+  user-select: none;
+}
+
+.pauseText {
+  margin: 0 0 var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.pauseActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.captureLabel {
+  display: block;
+  margin-bottom: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.captureInput {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+}

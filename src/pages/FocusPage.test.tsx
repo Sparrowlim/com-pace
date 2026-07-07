@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -32,10 +32,17 @@ beforeEach(() => {
     queuedBlocks: [],
     activeBlock: null,
     elapsedSeconds: 0,
+    pausedAt: null,
+    pausedMs: 0,
     predictions: [],
     energyCells: [],
     lastResolvedBlock: null,
+    capturedThought: null,
   })
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('FocusPage — no active block', () => {
@@ -56,10 +63,14 @@ describe('FocusPage — countdown', () => {
   })
 
   test('updates the displayed countdown when the store ticks', async () => {
+    const now = new Date('2026-07-07T10:00:00.000Z')
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
     await seedActiveBlockWithPrediction()
     renderFocusPage()
     expect(screen.getByText('15:00')).toBeInTheDocument()
 
+    vi.setSystemTime(new Date(now.getTime() + 1_000))
     act(() => {
       useAppStore.getState().tick()
     })
@@ -77,16 +88,18 @@ describe('FocusPage — countdown', () => {
   })
 
   test('auto-finishes at 900 seconds: completes, resolves the prediction, lights energy, and goes to retro', async () => {
+    const now = new Date('2026-07-07T10:00:00.000Z')
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
     const { block } = await seedActiveBlockWithPrediction()
     renderFocusPage()
     expect(screen.getByText('15:00')).toBeInTheDocument()
 
-    // Drive elapsedSeconds to the 900s threshold directly (bypassing the real 900s wall-clock
-    // wait) — the interval wiring itself is covered separately above.
+    // Jump straight past the 900s threshold and tick once — timestamp-based recomputation
+    // (SPEC §6/P13) means a single tick after the gap is enough, no need to call tick() 900 times.
+    vi.setSystemTime(new Date(now.getTime() + 900_000))
     act(() => {
-      for (let i = 0; i < 900; i += 1) {
-        useAppStore.getState().tick()
-      }
+      useAppStore.getState().tick()
     })
 
     expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
@@ -98,14 +111,110 @@ describe('FocusPage — countdown', () => {
   })
 })
 
-describe('FocusPage — give up', () => {
+describe('FocusPage — pause (SPEC §6 5-B, long-press only)', () => {
+  test('shows the pause overlay when the active block is paused', async () => {
+    const { block } = await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+    void block
+
+    expect(await screen.findByText('잠시 멈췄어요')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '재개' })).toBeInTheDocument()
+  })
+
+  test('resume returns to the running countdown', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '재개' }))
+
+    expect(screen.queryByText('잠시 멈췄어요')).not.toBeInTheDocument()
+    expect(useAppStore.getState().activeBlock?.status).toBe('in_progress')
+  })
+
+  test('quitting from the pause overlay ends the block as incomplete and goes to retro', async () => {
+    const { block } = await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '그만하기' }))
+
+    expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.activeBlock).toBeNull()
+    expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
+    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+  })
+
+  test('there is no direct quit button on the running countdown screen', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    await screen.findByText('15:00')
+
+    expect(screen.queryByRole('button', { name: '오늘은 여기까지' })).not.toBeInTheDocument()
+  })
+})
+
+describe('FocusPage — distraction capture (SPEC §6 5-A, single-slot)', () => {
+  test('tapping the countdown opens the capture modal without pausing the timer', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('책상 정리하기'))
+
+    expect(await screen.findByRole('dialog', { name: '딴생각 포착' })).toBeInTheDocument()
+    expect(useAppStore.getState().activeBlock?.status).toBe('in_progress')
+  })
+
+  test('"나중에 보기" with text saves it as the captured thought and closes the modal', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    const user = userEvent.setup()
+    await user.click(screen.getByText('책상 정리하기'))
+
+    await user.type(
+      await screen.findByLabelText('잠깐 스친 생각, 적어두고 다시 집중하세요'),
+      '빨래도 해야지',
+    )
+    await user.click(screen.getByRole('button', { name: '나중에 보기' }))
+
+    expect(useAppStore.getState().capturedThought).toBe('빨래도 해야지')
+    expect(screen.queryByRole('dialog', { name: '딴생각 포착' })).not.toBeInTheDocument()
+  })
+
+  test('"나중에 보기" with empty text closes without saving anything', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    const user = userEvent.setup()
+    await user.click(screen.getByText('책상 정리하기'))
+
+    await user.click(await screen.findByRole('button', { name: '나중에 보기' }))
+
+    expect(useAppStore.getState().capturedThought).toBeNull()
+  })
+})
+
+describe('FocusPage — give up via pause', () => {
   test('ends the block as incomplete without a prediction and goes to retro', async () => {
     const task = await useAppStore.getState().addTask('청소')
     const block = await useAppStore.getState().startBlock(task.id, '책상 정리하기')
     renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
 
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+    await user.click(await screen.findByRole('button', { name: '그만하기' }))
 
     expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
     const state = useAppStore.getState()
@@ -119,10 +228,13 @@ describe('FocusPage — give up', () => {
 describe('FocusPage — energy cell date', () => {
   test('lights the energy cell under today’s date', async () => {
     await seedActiveBlockWithPrediction()
-    const user = userEvent.setup()
     renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+    const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+    await user.click(await screen.findByRole('button', { name: '그만하기' }))
 
     await screen.findByText('RETRO_STUB')
     const cell = useAppStore.getState().energyCells[0]

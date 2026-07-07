@@ -40,6 +40,7 @@ beforeEach(() => {
     energyCells: [{ id: 'e1', date: '2026-07-07', blockId: 'block-1', litAt: '' }],
     lastResolvedBlock: null,
     activeBlock: null,
+    capturedThought: null,
   })
 })
 
@@ -168,6 +169,75 @@ describe('RetroPage — incomplete + prediction miss', () => {
 
     await screen.findByText('오늘은 여기까지, 15분만큼의 증거는 남았어요.')
     expect(document.querySelectorAll('[class*="bonusCard"]')).toHaveLength(0)
+  })
+})
+
+describe('RetroPage — captured thought (SPEC §6 5-A one-time card)', () => {
+  test('shows the card when a thought was captured during the block', async () => {
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done' }),
+      capturedThought: '빨래도 널어야지',
+    })
+    renderRetroPage()
+
+    expect(await screen.findByText('아까 스친 생각: “빨래도 널어야지”')).toBeInTheDocument()
+  })
+
+  test('renders nothing when no thought was captured', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    await screen.findByText('15분, 오늘도 해냈어요.')
+    expect(screen.queryByRole('button', { name: '버리기' })).not.toBeInTheDocument()
+  })
+
+  test('"버리기" clears the captured thought without queuing anything', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done' }),
+      capturedThought: '빨래도 널어야지',
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '버리기' }))
+
+    expect(useAppStore.getState().capturedThought).toBeNull()
+    expect(useAppStore.getState().queuedBlocks).toHaveLength(0)
+  })
+
+  test('"새 조각화" queues the thought as a new block for the same task and clears it', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done', taskId: 'task-1' }),
+      capturedThought: '빨래도 널어야지',
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '새 조각화' }))
+
+    const state = useAppStore.getState()
+    expect(state.capturedThought).toBeNull()
+    expect(state.queuedBlocks).toEqual([
+      expect.objectContaining({ taskId: 'task-1', verbLabel: '빨래도 널어야지' }),
+    ])
+  })
+
+  test('leaving the screen unprocessed silently clears the captured thought', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기' }],
+      lastResolvedBlock: makeBlock({ status: 'done', taskId: 'task-1' }),
+      predictions: [{ blockId: 'block-1', guess: true, actual: true }],
+      capturedThought: '빨래도 널어야지',
+    })
+    renderRetroPage()
+    await screen.findByText('아까 스친 생각: “빨래도 널어야지”')
+
+    await user.click(screen.getByRole('button', { name: '바로 다음 블록' }))
+
+    await screen.findByText('PREDICT_STUB')
+    expect(useAppStore.getState().capturedThought).toBeNull()
   })
 })
 

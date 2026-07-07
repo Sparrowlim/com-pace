@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '../store'
 import { nowIso, todayDateString } from '../lib/time'
+import { FOCUS_SECONDS } from '../lib/session-timer'
 
-export const FOCUS_SECONDS = 900
+export { FOCUS_SECONDS }
 
 export function formatRemaining(elapsedSeconds: number): string {
   const remaining = Math.max(FOCUS_SECONDS - elapsedSeconds, 0)

@@ -25,6 +25,32 @@ function BonusCard({ hit }: { hit: boolean }) {
   )
 }
 
+// SPEC §6 5-A — 블록 종료 직후 1회성 표시, 상주 목록 없음. 처리 안 하고 이탈하면 조용히 사라진다
+// (RetroPage 언마운트 클린업에서 capturedThought도 함께 지움).
+function CapturedThoughtCard({
+  text,
+  onDiscard,
+  onRefragment,
+}: {
+  text: string
+  onDiscard: () => void
+  onRefragment: () => void
+}) {
+  return (
+    <div className={styles.captureCard}>
+      <p className={styles.captureText}>아까 스친 생각: “{text}”</p>
+      <div className={styles.captureActions}>
+        <Button variant="secondary" onClick={onDiscard}>
+          버리기
+        </Button>
+        <Button variant="secondary" onClick={onRefragment}>
+          새 조각화
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function RetroActions({
   completed,
   onNext,
@@ -55,22 +81,70 @@ function RetroActions({
   )
 }
 
-export default function RetroPage() {
-  const lastResolvedBlock = useAppStore((state) => state.lastResolvedBlock)
-  const predictions = useAppStore((state) => state.predictions)
-  const energyCells = useAppStore((state) => state.energyCells)
-  const tasks = useAppStore((state) => state.tasks)
-  const queuedBlocks = useAppStore((state) => state.queuedBlocks)
-  const startBlock = useAppStore((state) => state.startBlock)
-  const setLastResolvedBlock = useAppStore((state) => state.setLastResolvedBlock)
-  const navigate = useNavigate()
+function resolveNextRoute(
+  tasks: Parameters<typeof selectActiveTask>[0],
+  queuedBlocks: Parameters<typeof selectActiveTask>[1],
+): string {
+  const task = selectActiveTask(tasks, queuedBlocks)
+  const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
+  return next ? ROUTES.predict : ROUTES.dashboard
+}
 
-  // 컨텍스트 정리는 언마운트 시 한 번만 — 핸들러 안에서 지우면 그 즉시 이 컴포넌트가
-  // lastResolvedBlock=null로 리렌더되어 위 가드가 먼저 대시보드로 리다이렉트해버리고
-  // 뒤이은 navigate() 호출과 경합한다.
+function makeThoughtActions(
+  capturedThought: string | null,
+  setCapturedThought: (text: string | null) => void,
+  queueBlocks: (taskId: string, verbLabels: string[]) => void,
+  taskId: string,
+) {
+  return {
+    onDiscard: () => setCapturedThought(null),
+    onRefragment: () => {
+      if (capturedThought) {
+        queueBlocks(taskId, [capturedThought])
+      }
+      setCapturedThought(null)
+    },
+  }
+}
+
+// 컨텍스트 정리는 언마운트 시 한 번만 — 핸들러 안에서 지우면 그 즉시 이 컴포넌트가
+// lastResolvedBlock=null로 리렌더되어 위 가드가 먼저 대시보드로 리다이렉트해버리고
+// 뒤이은 navigate() 호출과 경합한다. capturedThought도 같은 타이밍에 정리 — 처리 안 하고
+// 이탈하면 조용히 사라진다(SPEC §6 5-A, 상주 목록 없음).
+function useClearRetroContextOnUnmount(
+  setLastResolvedBlock: (block: null) => void,
+  setCapturedThought: (text: null) => void,
+) {
   useEffect(() => {
-    return () => setLastResolvedBlock(null)
-  }, [setLastResolvedBlock])
+    return () => {
+      setLastResolvedBlock(null)
+      setCapturedThought(null)
+    }
+  }, [setLastResolvedBlock, setCapturedThought])
+}
+
+function useRetroStoreState() {
+  return {
+    lastResolvedBlock: useAppStore((state) => state.lastResolvedBlock),
+    predictions: useAppStore((state) => state.predictions),
+    energyCells: useAppStore((state) => state.energyCells),
+    tasks: useAppStore((state) => state.tasks),
+    queuedBlocks: useAppStore((state) => state.queuedBlocks),
+    startBlock: useAppStore((state) => state.startBlock),
+    setLastResolvedBlock: useAppStore((state) => state.setLastResolvedBlock),
+    capturedThought: useAppStore((state) => state.capturedThought),
+    setCapturedThought: useAppStore((state) => state.setCapturedThought),
+    queueBlocks: useAppStore((state) => state.queueBlocks),
+  }
+}
+
+export default function RetroPage() {
+  const store = useRetroStoreState()
+  const { lastResolvedBlock, predictions, energyCells, tasks, queuedBlocks } = store
+  const { startBlock, setLastResolvedBlock, capturedThought, setCapturedThought, queueBlocks } =
+    store
+  const navigate = useNavigate()
+  useClearRetroContextOnUnmount(setLastResolvedBlock, setCapturedThought)
 
   if (!lastResolvedBlock) {
     return <Navigate to={ROUTES.dashboard} replace />
@@ -81,20 +155,19 @@ export default function RetroPage() {
   const prediction = predictions.find((p) => p.blockId === block.id)
   const hit = prediction ? prediction.guess === prediction.actual : false
 
-  const handleNext = () => {
-    const task = selectActiveTask(tasks, queuedBlocks)
-    const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
-    navigate(next ? ROUTES.predict : ROUTES.dashboard)
-  }
+  const handleNext = () => navigate(resolveNextRoute(tasks, queuedBlocks))
 
   const handleContinue = async () => {
     await startBlock(block.taskId, block.verbLabel)
     navigate(ROUTES.focus)
   }
 
-  const handleStop = () => {
-    navigate(ROUTES.dashboard)
-  }
+  const thoughtActions = makeThoughtActions(
+    capturedThought,
+    setCapturedThought,
+    queueBlocks,
+    block.taskId,
+  )
 
   return (
     <div className={styles.page}>
@@ -103,12 +176,13 @@ export default function RetroPage() {
       </p>
       <RecognitionChip completed={completed} />
       <BonusCard hit={hit} />
+      {capturedThought && <CapturedThoughtCard text={capturedThought} {...thoughtActions} />}
       <EnergyBar filledCount={energyCells.length} justFilledIndex={energyCells.length - 1} />
       <RetroActions
         completed={completed}
         onNext={handleNext}
         onContinue={handleContinue}
-        onStop={handleStop}
+        onStop={() => navigate(ROUTES.dashboard)}
       />
     </div>
   )

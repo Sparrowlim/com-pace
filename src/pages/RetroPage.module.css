@@ -53,3 +53,21 @@
   gap: var(--space-4);
   width: 100%;
 }
+
+.captureCard {
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-raised);
+}
+
+.captureText {
+  margin: 0 0 var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.captureActions {
+  display: flex;
+  gap: var(--space-4);
+}
