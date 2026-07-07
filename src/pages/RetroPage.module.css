@@ -1,0 +1,55 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-xl);
+  color: var(--text-strong);
+}
+
+.doneChip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: var(--state-done-bg);
+  color: var(--state-done-text);
+  font-size: var(--font-size-sm);
+}
+
+.carryChip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: var(--state-carry-bg);
+  color: var(--state-carry-text);
+  font-size: var(--font-size-sm);
+}
+
+/* SCREEN-FLOW §3-2 — 적중일 때만 렌더, 빗나감은 이 카드 자체가 없다(배지·박스 없음) */
+.bonusCard {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--bonus-bg);
+  border: 1px solid var(--bonus-line);
+}
+
+.bonusText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}

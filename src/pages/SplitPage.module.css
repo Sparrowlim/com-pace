@@ -1,0 +1,58 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.drafts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.draftRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}

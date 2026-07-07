@@ -1,0 +1,25 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.prompt {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.question {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-xl);
+  color: var(--text-strong);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

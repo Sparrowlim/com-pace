@@ -1,0 +1,113 @@
+import { describe, expect, test, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
+import SplitPage from './SplitPage'
+import { useAppStore } from '../store'
+import { ROUTES } from '../routes/paths'
+
+function renderSplitPage() {
+  const router = createMemoryRouter(
+    [
+      { path: ROUTES.split, element: <SplitPage /> },
+      { path: ROUTES.dashboard, element: <div>DASHBOARD_STUB</div> },
+      { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
+    ],
+    { initialEntries: [ROUTES.split] },
+  )
+  render(<RouterProvider router={router} />)
+}
+
+beforeEach(() => {
+  useAppStore.setState({ tasks: [], queuedBlocks: [] })
+})
+
+describe('SplitPage', () => {
+  test('redirects to the dashboard when there is no active task', async () => {
+    renderSplitPage()
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+  })
+
+  test('renders the active task title', async () => {
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    expect(await screen.findByText('청소')).toBeInTheDocument()
+  })
+
+  test('adds a draft block combining the fragment text and a verb chip', async () => {
+    const user = userEvent.setup()
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.click(screen.getByRole('button', { name: '정리하기' }))
+
+    expect(await screen.findByText('책상 정리하기')).toBeInTheDocument()
+  })
+
+  test('clears the fragment input after adding a draft', async () => {
+    const user = userEvent.setup()
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    const input = await screen.findByRole('textbox')
+    await user.type(input, '책상')
+    await user.click(screen.getByRole('button', { name: '정리하기' }))
+
+    expect(input).toHaveValue('')
+  })
+
+  test('removes a draft block', async () => {
+    const user = userEvent.setup()
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.click(screen.getByRole('button', { name: '정리하기' }))
+    await user.click(await screen.findByRole('button', { name: '책상 정리하기 삭제' }))
+
+    expect(screen.queryByText('책상 정리하기')).not.toBeInTheDocument()
+  })
+
+  test('disables the finish button while there are no drafts', async () => {
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    expect(await screen.findByRole('button', { name: '완료' })).toBeDisabled()
+  })
+
+  test('finishing queues the drafted blocks, marks the task split, and navigates home', async () => {
+    const user = userEvent.setup()
+    const task = await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.click(screen.getByRole('button', { name: '정리하기' }))
+    await user.click(screen.getByRole('button', { name: '완료' }))
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+    const { queuedBlocks, tasks } = useAppStore.getState()
+    expect(queuedBlocks).toEqual([
+      { id: expect.any(String), taskId: task.id, verbLabel: '책상 정리하기' },
+    ])
+    expect(tasks.find((t) => t.id === task.id)?.splitDone).toBe(true)
+  })
+
+  test('renders one main task card (One Task invariant)', async () => {
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+    await screen.findByText('청소')
+
+    expect(document.querySelectorAll('[data-task-card]')).toHaveLength(1)
+  })
+
+  test('redirects to focus when a block is already in progress (One Task invariant, e.g. via back-navigation)', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    await useAppStore.getState().startBlock(task.id, '책상 정리하기')
+    renderSplitPage()
+
+    expect(await screen.findByText('FOCUS_STUB')).toBeInTheDocument()
+  })
+})

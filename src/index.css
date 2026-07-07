@@ -1,10 +1,31 @@
 @import './styles/tokens.generated.css';
 
+/*
+ * 전역 box-sizing 리셋 — 없으면 width:100%에 padding/border가 있는 모든 요소(input, 카드 등)가
+ * content-box 기본값 때문에 부모 폭을 넘어 그리드 잘림/가로 스크롤을 유발한다
+ * (README §0-1② "320px 기준 깨짐 0" 위반 — 실측: DashboardPage .input이 375px 뷰포트에서
+ * 381px까지 튀어나옴, 2026-07-07 모바일 뷰포트 Playwright 점검으로 발견).
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+ * 다크모드는 기본이 아니다(DESIGN-TOKENS §4-2 DB-01/DB-04) — 유일한 의도된 다크 표면은
+ * FocusPage의 [data-mode="focus"] 오버레이(앱이 직접 트리거)뿐, 시스템 설정으로 자동 전환되면
+ * 안 된다. `color-scheme: light dark`를 켜둔 채 html/body에 배경색을 지정하지 않으면, 시스템이
+ * 다크를 선호할 때 브라우저가 투명 캔버스를 검은색으로 기본 렌더링해 모든 화면 여백이 시커멓게
+ * 비쳐 보인다(실측: 2026-07-07, 다크 선호 브라우저에서 재현). `light`로 고정하고 캔버스
+ * 배경색도 명시해 어떤 화면이 배경색 지정을 빠뜨려도 이 문제가 재발하지 않게 막는다.
+ */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   min-height: 100svh;
+  background-color: var(--surface-page);
 }
