@@ -74,3 +74,36 @@ describe('retroContextSlice — capturedThought (SPEC §6 5-A single-slot captur
     expect(store.getState().lastResolvedBlock).toEqual(block)
   })
 })
+
+describe('retroContextSlice — timeSenseFeedback (PH-05.1 — 영점조절 D-11)', () => {
+  test('starts with no time-sense feedback', () => {
+    const store = createStore()
+    expect(store.getState().timeSenseFeedback).toBeNull()
+  })
+
+  test('setTimeSenseFeedback stores each of the three values', () => {
+    const store = createStore()
+
+    store.getState().setTimeSenseFeedback('fast')
+    expect(store.getState().timeSenseFeedback).toBe('fast')
+
+    store.getState().setTimeSenseFeedback('on_time')
+    expect(store.getState().timeSenseFeedback).toBe('on_time')
+
+    store.getState().setTimeSenseFeedback('slow')
+    expect(store.getState().timeSenseFeedback).toBe('slow')
+  })
+
+  test('setTimeSenseFeedback(null) clears it, independently of other retro fields', () => {
+    const store = createStore()
+    store.getState().setLastResolvedBlock(block)
+    store.getState().setCapturedThought('딴생각')
+    store.getState().setTimeSenseFeedback('slow')
+
+    store.getState().setTimeSenseFeedback(null)
+
+    expect(store.getState().timeSenseFeedback).toBeNull()
+    expect(store.getState().capturedThought).toBe('딴생각')
+    expect(store.getState().lastResolvedBlock).toEqual(block)
+  })
+})

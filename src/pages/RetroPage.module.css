@@ -54,6 +54,14 @@
   width: 100%;
 }
 
+/* PH-05.1 — 영점조절 체감 3버튼(D-11) */
+.timeSenseOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
 .captureCard {
   width: 100%;
   padding: var(--space-4) var(--space-5);

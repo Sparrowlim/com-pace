@@ -96,6 +96,55 @@ describe('DashboardPage — split task with a queued block', () => {
 
     expect(await screen.findByText('PREDICT_STUB')).toBeInTheDocument()
   })
+
+  test('renders no self-selection options when only one fragment is queued (regression)', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    renderDashboard()
+    await screen.findByText(/책상 정리하기/)
+
+    expect(screen.queryAllByRole('button', { pressed: false })).toHaveLength(0)
+    expect(document.querySelectorAll('[data-task-card]')).toHaveLength(1)
+  })
+})
+
+describe('DashboardPage — self-selection (PH-05.1, SPEC §3 · D-05)', () => {
+  test('lists every queued fragment in split order when 2+ are queued, with no auto CTA', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기', '이메일 확인하기', '설거지하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    renderDashboard()
+
+    expect(await screen.findByRole('button', { name: '책상 정리하기' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '이메일 확인하기' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '설거지하기' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '이 블록 시작하기' })).not.toBeInTheDocument()
+  })
+
+  test('preserves the One Task invariant while the selection UI is shown', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기', '이메일 확인하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    renderDashboard()
+    await screen.findByRole('button', { name: '책상 정리하기' })
+
+    expect(document.querySelectorAll('[data-task-card]')).toHaveLength(1)
+  })
+
+  test('tapping any option promotes it to the front of the queue and navigates to predict', async () => {
+    const user = userEvent.setup()
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기', '이메일 확인하기', '설거지하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    renderDashboard()
+
+    await user.click(await screen.findByRole('button', { name: '이메일 확인하기' }))
+
+    expect(await screen.findByText('PREDICT_STUB')).toBeInTheDocument()
+    const { queuedBlocks } = useAppStore.getState()
+    expect(queuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '이메일 확인하기' })
+  })
 })
 
 describe('DashboardPage — timer in progress', () => {

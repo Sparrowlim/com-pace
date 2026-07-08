@@ -21,6 +21,7 @@ beforeEach(() => {
     energyCells: [],
     lastResolvedBlock: null,
     capturedThought: null,
+    timeSenseFeedback: null,
   })
 })
 
@@ -51,8 +52,8 @@ describe('core loop integration (real routes, fixture-seeded task)', () => {
     const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.dashboard] })
     render(<RouterProvider router={router} />)
 
-    // 대시보드: 첫 블록 시작
-    await user.click(await screen.findByRole('button', { name: '이 블록 시작하기' }))
+    // 대시보드: 큐가 2개라 자기선택 UI(PH-05.1, SPEC §3 · D-05) — 첫 조각을 골라 시작
+    await user.click(await screen.findByRole('button', { name: '책상 정리하기' }))
 
     // 예측: 완료 예측
     await user.click(await screen.findByRole('button', { name: '끝날 것 같아요' }))

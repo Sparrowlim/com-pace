@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { EnergyBar } from '../components/EnergyBar'
 import { Button } from '../components/Button'
+import { OptionRow } from '../components/OptionRow'
 import { useAppStore } from '../store'
 import { selectActiveTask, selectNextQueuedBlock } from '../lib/core-loop-selectors'
+import type { TimeSenseFeedback } from '../store/slices/retro-context-slice'
 import { ROUTES } from '../routes/paths'
 import styles from './RetroPage.module.css'
 
@@ -12,6 +14,36 @@ function RecognitionChip({ completed }: { completed: boolean }) {
     <span className={completed ? styles.doneChip : styles.carryChip}>
       {completed ? '완료' : '이어감'}
     </span>
+  )
+}
+
+// PH-05.1 — 영점조절 체감(SPEC §3, D-11). 완료/미완료 무관하게 항상 렌더하고(성공/실패
+// 양쪽 모두 존재하는 별개 축), 응답을 강제하지 않는다 — 미선택 상태로 진행 버튼을 눌러도 된다.
+function TimeSenseCalibration({
+  value,
+  onSelect,
+}: {
+  value: TimeSenseFeedback | null
+  onSelect: (value: TimeSenseFeedback) => void
+}) {
+  return (
+    <div className={styles.timeSenseOptions}>
+      <OptionRow
+        label="순식간이었어요"
+        selected={value === 'fast'}
+        onSelect={() => onSelect('fast')}
+      />
+      <OptionRow
+        label="딱 15분이었어요"
+        selected={value === 'on_time'}
+        onSelect={() => onSelect('on_time')}
+      />
+      <OptionRow
+        label="너무 길게 느껴졌어요"
+        selected={value === 'slow'}
+        onSelect={() => onSelect('slow')}
+      />
+    </div>
   )
 }
 
@@ -114,13 +146,15 @@ function makeThoughtActions(
 function useClearRetroContextOnUnmount(
   setLastResolvedBlock: (block: null) => void,
   setCapturedThought: (text: null) => void,
+  setTimeSenseFeedback: (value: null) => void,
 ) {
   useEffect(() => {
     return () => {
       setLastResolvedBlock(null)
       setCapturedThought(null)
+      setTimeSenseFeedback(null)
     }
-  }, [setLastResolvedBlock, setCapturedThought])
+  }, [setLastResolvedBlock, setCapturedThought, setTimeSenseFeedback])
 }
 
 function useRetroStoreState() {
@@ -135,6 +169,8 @@ function useRetroStoreState() {
     capturedThought: useAppStore((state) => state.capturedThought),
     setCapturedThought: useAppStore((state) => state.setCapturedThought),
     queueBlocks: useAppStore((state) => state.queueBlocks),
+    timeSenseFeedback: useAppStore((state) => state.timeSenseFeedback),
+    setTimeSenseFeedback: useAppStore((state) => state.setTimeSenseFeedback),
   }
 }
 
@@ -143,8 +179,9 @@ export default function RetroPage() {
   const { lastResolvedBlock, predictions, energyCells, tasks, queuedBlocks } = store
   const { startBlock, setLastResolvedBlock, capturedThought, setCapturedThought, queueBlocks } =
     store
+  const { timeSenseFeedback, setTimeSenseFeedback } = store
   const navigate = useNavigate()
-  useClearRetroContextOnUnmount(setLastResolvedBlock, setCapturedThought)
+  useClearRetroContextOnUnmount(setLastResolvedBlock, setCapturedThought, setTimeSenseFeedback)
 
   if (!lastResolvedBlock) {
     return <Navigate to={ROUTES.dashboard} replace />
@@ -175,6 +212,7 @@ export default function RetroPage() {
         {completed ? '15분, 오늘도 해냈어요.' : '오늘은 여기까지, 15분만큼의 증거는 남았어요.'}
       </p>
       <RecognitionChip completed={completed} />
+      <TimeSenseCalibration value={timeSenseFeedback} onSelect={setTimeSenseFeedback} />
       <BonusCard hit={hit} />
       {capturedThought && <CapturedThoughtCard text={capturedThought} {...thoughtActions} />}
       <EnergyBar filledCount={energyCells.length} justFilledIndex={energyCells.length - 1} />

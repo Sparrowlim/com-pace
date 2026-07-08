@@ -41,6 +41,7 @@ beforeEach(() => {
     lastResolvedBlock: null,
     activeBlock: null,
     capturedThought: null,
+    timeSenseFeedback: null,
   })
 })
 
@@ -238,6 +239,74 @@ describe('RetroPage — captured thought (SPEC §6 5-A one-time card)', () => {
 
     await screen.findByText('PREDICT_STUB')
     expect(useAppStore.getState().capturedThought).toBeNull()
+  })
+})
+
+describe('RetroPage — 영점조절 체감 (PH-05.1, SPEC §3 · D-11)', () => {
+  test('renders the 3-button calibration for a completed block', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    expect(await screen.findByRole('button', { name: '순식간이었어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '딱 15분이었어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '너무 길게 느껴졌어요' })).toBeInTheDocument()
+  })
+
+  test('renders the 3-button calibration for an incomplete block too (D-11: axis independent of completion)', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'incomplete' }) })
+    renderRetroPage()
+
+    expect(await screen.findByRole('button', { name: '순식간이었어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '딱 15분이었어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '너무 길게 느껴졌어요' })).toBeInTheDocument()
+  })
+
+  test('tapping an option stores the corresponding value', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '너무 길게 느껴졌어요' }))
+
+    expect(useAppStore.getState().timeSenseFeedback).toBe('slow')
+  })
+
+  test('leaving all three unselected does not block "바로 다음 블록"', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done' }),
+      predictions: [{ blockId: 'block-1', guess: true, actual: true }],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '바로 다음 블록' }))
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+  })
+
+  test('leaving all three unselected does not block "이어서 15분 더" / "오늘은 여기까지"', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'incomplete' }) })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+  })
+
+  test('clears the selection on unmount (no persistence)', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done' }),
+      predictions: [{ blockId: 'block-1', guess: true, actual: true }],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '순식간이었어요' }))
+    await user.click(screen.getByRole('button', { name: '바로 다음 블록' }))
+
+    await screen.findByText('DASHBOARD_STUB')
+    expect(useAppStore.getState().timeSenseFeedback).toBeNull()
   })
 })
 

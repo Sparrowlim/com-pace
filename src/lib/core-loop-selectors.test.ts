@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { selectActiveTask, selectNextQueuedBlock } from './core-loop-selectors'
+import {
+  selectActiveTask,
+  selectNextQueuedBlock,
+  selectQueuedBlocksForTask,
+} from './core-loop-selectors'
 import type { Task } from '../types/task'
 import type { QueuedBlock } from '../store/slices/block-queue-slice'
 
@@ -57,5 +61,33 @@ describe('selectNextQueuedBlock', () => {
   test('ignores blocks queued for other tasks', () => {
     const queued: QueuedBlock[] = [{ id: 'q1', taskId: 'task-2', verbLabel: '확인하기' }]
     expect(selectNextQueuedBlock(queued, 'task-1')).toBeUndefined()
+  })
+})
+
+describe('selectQueuedBlocksForTask (PH-05.1 — 자기선택 옵션 목록)', () => {
+  test('returns an empty array when nothing is queued for the task', () => {
+    expect(selectQueuedBlocksForTask([], 'task-1')).toEqual([])
+  })
+
+  test('returns the single queued block for the task', () => {
+    const queued: QueuedBlock[] = [{ id: 'q1', taskId: 'task-1', verbLabel: '확인하기' }]
+    expect(selectQueuedBlocksForTask(queued, 'task-1')).toEqual(queued)
+  })
+
+  test('returns all queued blocks for the task in queued order (no reordering)', () => {
+    const queued: QueuedBlock[] = [
+      { id: 'q1', taskId: 'task-1', verbLabel: '확인하기' },
+      { id: 'q2', taskId: 'task-1', verbLabel: '정리하기' },
+      { id: 'q3', taskId: 'task-1', verbLabel: '제출하기' },
+    ]
+    expect(selectQueuedBlocksForTask(queued, 'task-1')).toEqual(queued)
+  })
+
+  test('does not include blocks queued for a different task', () => {
+    const queued: QueuedBlock[] = [
+      { id: 'q1', taskId: 'task-1', verbLabel: '확인하기' },
+      { id: 'q2', taskId: 'task-2', verbLabel: '다른 과제' },
+    ]
+    expect(selectQueuedBlocksForTask(queued, 'task-1')).toEqual([queued[0]])
   })
 })

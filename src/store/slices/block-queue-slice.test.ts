@@ -60,3 +60,48 @@ describe('blockQueueSlice.dequeueBlock', () => {
     expect(store.getState().queuedBlocks).toEqual(before)
   })
 })
+
+describe('blockQueueSlice.promoteQueuedBlock (PH-05.1 — 자기선택 = 큐 재정렬)', () => {
+  test('moves a middle item to the front of that task queue', () => {
+    const store = createStore()
+    store.getState().queueBlocks('task-1', ['A', 'B', 'C'])
+    const [, second] = store.getState().queuedBlocks
+
+    store.getState().promoteQueuedBlock('task-1', second!.id)
+
+    expect(store.getState().queuedBlocks.map((b) => b.verbLabel)).toEqual(['B', 'A', 'C'])
+  })
+
+  test('promoting the item already at the front leaves order unchanged', () => {
+    const store = createStore()
+    store.getState().queueBlocks('task-1', ['A', 'B'])
+    const [first] = store.getState().queuedBlocks
+    const before = store.getState().queuedBlocks
+
+    store.getState().promoteQueuedBlock('task-1', first!.id)
+
+    expect(store.getState().queuedBlocks).toEqual(before)
+  })
+
+  test('ignores an id that is not queued', () => {
+    const store = createStore()
+    store.getState().queueBlocks('task-1', ['A', 'B'])
+    const before = store.getState().queuedBlocks
+
+    store.getState().promoteQueuedBlock('task-1', 'does-not-exist')
+
+    expect(store.getState().queuedBlocks).toEqual(before)
+  })
+
+  test('does not disturb another task queue or its relative order', () => {
+    const store = createStore()
+    store.getState().queueBlocks('task-1', ['A', 'B'])
+    store.getState().queueBlocks('task-2', ['X', 'Y'])
+    const task2Before = store.getState().queuedBlocks.filter((b) => b.taskId === 'task-2')
+    const [, second] = store.getState().queuedBlocks.filter((b) => b.taskId === 'task-1')
+
+    store.getState().promoteQueuedBlock('task-1', second!.id)
+
+    expect(store.getState().queuedBlocks.filter((b) => b.taskId === 'task-2')).toEqual(task2Before)
+  })
+})

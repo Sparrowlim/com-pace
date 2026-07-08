@@ -17,3 +17,12 @@ export function selectNextQueuedBlock(
 ): QueuedBlock | undefined {
   return queuedBlocks.find((block) => block.taskId === taskId)
 }
+
+// PH-05.1 — "만만한 1개 자기선택"(SPEC §3, D-05)의 선택지 목록. 쪼갠 순서 그대로 반환하며
+// 재정렬하지 않는다(우선순위 판단 재도입 금지, D-05 근거).
+export function selectQueuedBlocksForTask(
+  queuedBlocks: QueuedBlock[],
+  taskId: string,
+): QueuedBlock[] {
+  return queuedBlocks.filter((block) => block.taskId === taskId)
+}
