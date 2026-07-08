@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { Button } from '../components/Button'
 import { EnergyBar } from '../components/EnergyBar'
 import { useAppStore } from '../store'
 import { selectActiveTask, selectNextQueuedBlock } from '../lib/core-loop-selectors'
 import { todayDateString } from '../lib/time'
+import { isOnboardingComplete } from '../lib/onboarding-status'
 import { ROUTES } from '../routes/paths'
 import styles from './DashboardPage.module.css'
 
@@ -77,6 +78,13 @@ export default function DashboardPage() {
   useEffect(() => {
     loadEnergyCellsForDate(todayDateString())
   }, [loadEnergyCellsForDate])
+
+  // 최초 실행 라우팅 게이트(PH-07) — 온보딩을 마치지 않은 사용자는 항상 온보딩으로 우회된다
+  // (SplitPage/PredictPage가 이미 쓰는 국소 <Navigate replace> 가드와 동일 스타일 — 훅 호출 이후에
+  // 조건부로 반환해야 rules-of-hooks를 지킨다).
+  if (!isOnboardingComplete()) {
+    return <Navigate to={ROUTES.onboarding} replace />
+  }
 
   const handleAddTask = async () => {
     const trimmed = draftTitle.trim()

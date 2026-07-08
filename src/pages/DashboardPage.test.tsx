@@ -6,11 +6,13 @@ import DashboardPage from './DashboardPage'
 import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
+import { markOnboardingComplete } from '../lib/onboarding-status'
 
 function renderDashboard() {
   const router = createMemoryRouter(
     [
       { path: ROUTES.dashboard, element: <DashboardPage /> },
+      { path: ROUTES.onboarding, element: <div>ONBOARDING_STUB</div> },
       { path: ROUTES.split, element: <div>SPLIT_STUB</div> },
       { path: ROUTES.predict, element: <div>PREDICT_STUB</div> },
       { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
@@ -21,11 +23,22 @@ function renderDashboard() {
 }
 
 beforeEach(() => {
+  localStorage.clear()
+  markOnboardingComplete()
   useAppStore.setState({
     tasks: [],
     queuedBlocks: [],
     activeBlock: null,
     energyCells: [],
+  })
+})
+
+describe('DashboardPage — onboarding gate', () => {
+  test('redirects to onboarding when onboarding has not been completed', async () => {
+    localStorage.clear()
+    renderDashboard()
+
+    expect(await screen.findByText('ONBOARDING_STUB')).toBeInTheDocument()
   })
 })
 

@@ -4,8 +4,10 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { routeObjects } from './router'
 import { ROUTES } from '../routes/paths'
 import { useAppStore } from '../store'
+import { markOnboardingComplete } from '../lib/onboarding-status'
 
 beforeEach(() => {
+  localStorage.clear()
   useAppStore.setState({
     tasks: [],
     queuedBlocks: [],
@@ -19,7 +21,6 @@ beforeEach(() => {
 
 describe('router — still-placeholder pages (out of PH-05 scope)', () => {
   it.each([
-    [ROUTES.onboarding, '온보딩'],
     [ROUTES.dischargeEntry, '방전 진입'],
     [ROUTES.dischargeDashboard, '방전 대시보드'],
     [ROUTES.settings, '설정'],
@@ -32,7 +33,28 @@ describe('router — still-placeholder pages (out of PH-05 scope)', () => {
   })
 })
 
+describe('router — onboarding gate (PH-07)', () => {
+  it('redirects "/" to onboarding when onboarding has not been completed', async () => {
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.dashboard] })
+    render(<RouterProvider router={router} />)
+
+    expect(await screen.findByText('여기까지 온 것만으로도 잘하고 있어요')).toBeInTheDocument()
+  })
+
+  it('redirects "/onboarding" to the dashboard once onboarding is already complete', async () => {
+    markOnboardingComplete()
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.onboarding] })
+    render(<RouterProvider router={router} />)
+
+    expect(await screen.findByRole('textbox')).toBeInTheDocument()
+  })
+})
+
 describe('router — core loop (PH-05)', () => {
+  beforeEach(() => {
+    markOnboardingComplete()
+  })
+
   it('renders the dashboard add-task prompt at "/" with no seeded task', async () => {
     const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.dashboard] })
     render(<RouterProvider router={router} />)

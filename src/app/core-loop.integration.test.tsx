@@ -5,9 +5,11 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { routeObjects } from './router'
 import { ROUTES } from '../routes/paths'
 import { useAppStore } from '../store'
+import { markOnboardingComplete } from '../lib/onboarding-status'
 
 beforeEach(() => {
   localStorage.clear()
+  markOnboardingComplete()
   useAppStore.setState({
     tasks: [],
     queuedBlocks: [],
