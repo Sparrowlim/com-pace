@@ -82,3 +82,36 @@ describe('core loop integration (real routes, fixture-seeded task)', () => {
     expect(useAppStore.getState().energyCells).toHaveLength(2)
   })
 })
+
+// PH-06.1 수용 기준 C — 예측→집중(미완료 종료)→회고→"오늘은 여기까지"→대시보드에서 그 조각이
+// 큐에 남아 다시 선택 가능한지 실제 라우트 트리(스텁 없이)로 검증한다.
+describe('core loop integration — PH-06.1 session-scoped carryover (real routes)', () => {
+  test('abandoned fragment is selectable again after stop-for-today', async () => {
+    const user = userEvent.setup()
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.dashboard] })
+    render(<RouterProvider router={router} />)
+
+    await user.click(await screen.findByRole('button', { name: '이 블록 시작하기' }))
+    await user.click(await screen.findByRole('button', { name: '끝날 것 같아요' }))
+    await screen.findByText('15:00')
+
+    // 도중 중단(SPEC §6 5-B): 일시정지 → 그만하기 → 미완료 회고
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+    await user.click(await screen.findByRole('button', { name: '그만하기' }))
+    await screen.findByText('오늘은 여기까지, 15분만큼의 증거는 남았어요.')
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+
+    // 대시보드: 조각이 큐 후미에 남아 단일 조각 자동 노출(TaskCta)로 다시 선택 가능
+    expect(await screen.findByRole('button', { name: '이 블록 시작하기' })).toBeInTheDocument()
+    const { queuedBlocks } = useAppStore.getState()
+    expect(queuedBlocks).toHaveLength(1)
+    expect(queuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
+  })
+})

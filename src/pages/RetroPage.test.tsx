@@ -160,6 +160,91 @@ describe('RetroPage — incomplete + prediction hit', () => {
   })
 })
 
+describe('RetroPage — PH-06.1 세션 내 이월 (오늘은 여기까지 → 큐 후미 복귀)', () => {
+  test('requeues abandoned fragment to queue tail on stop-for-today', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '다른 조각' }],
+      lastResolvedBlock: makeBlock({
+        status: 'incomplete',
+        taskId: 'task-1',
+        verbLabel: '책상 정리하기',
+      }),
+      predictions: [],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+
+    await screen.findByText('DASHBOARD_STUB')
+    const { queuedBlocks } = useAppStore.getState()
+    expect(queuedBlocks).toHaveLength(2)
+    expect(queuedBlocks[0]).toMatchObject({ id: 'q1', taskId: 'task-1' })
+    expect(queuedBlocks[1]).toMatchObject({ taskId: 'task-1', verbLabel: '책상 정리하기' })
+    expect(queuedBlocks[1]?.id).not.toBe('block-1')
+  })
+
+  test('continue path does not re-add the fragment', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      queuedBlocks: [],
+      lastResolvedBlock: makeBlock({ status: 'incomplete', taskId: 'task-1' }),
+      predictions: [],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '이어서 15분 더' }))
+
+    await screen.findByText('FOCUS_STUB')
+    expect(useAppStore.getState().queuedBlocks).toHaveLength(0)
+  })
+
+  test('completed path does not requeue', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done', taskId: 'task-1' }),
+      predictions: [],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '바로 다음 블록' }))
+
+    await screen.findByText('DASHBOARD_STUB')
+    expect(useAppStore.getState().queuedBlocks).toHaveLength(0)
+  })
+
+  test('requeue does not touch other task queues', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      queuedBlocks: [{ id: 'q1', taskId: 'task-2', verbLabel: '다른 과제 조각' }],
+      lastResolvedBlock: makeBlock({ status: 'incomplete', taskId: 'task-1' }),
+      predictions: [],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+
+    await screen.findByText('DASHBOARD_STUB')
+    const task2Blocks = useAppStore.getState().queuedBlocks.filter((b) => b.taskId === 'task-2')
+    expect(task2Blocks).toEqual([{ id: 'q1', taskId: 'task-2', verbLabel: '다른 과제 조각' }])
+  })
+
+  test('no notice or nag copy rendered when a fragment returns', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'incomplete' }),
+      predictions: [],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 여기까지' }))
+
+    await screen.findByText('DASHBOARD_STUB')
+    expect(document.body.textContent).not.toMatch(/되돌렸|다시 담|보관함|이월했|큐로/)
+  })
+})
+
 describe('RetroPage — incomplete + prediction miss', () => {
   test('renders identically to a hit, minus the bonus card', async () => {
     useAppStore.setState({

@@ -24,6 +24,17 @@ function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQuit: () =
   )
 }
 
+// 개발 중 흐름 확인용 — 프로덕션 빌드에서는 트리쉐이킹으로 제거된다(CLAUDE §2 "시간 기반
+// 완료" 불변 규칙 보호, 실사용자에게는 절대 노출되지 않음).
+function DevSkipButton({ onSkip }: { onSkip: () => void }) {
+  if (!import.meta.env.DEV) return null
+  return (
+    <button type="button" className={styles.devSkip} onClick={onSkip}>
+      스킵(DEV)
+    </button>
+  )
+}
+
 type CaptureModalProps = {
   isOpen: boolean
   draft: string
@@ -90,6 +101,7 @@ export default function FocusPage() {
 
   return (
     <div className={styles.page} data-mode="focus">
+      <DevSkipButton onSkip={() => finish(true)} />
       <div className={styles.tapArea} {...(isPaused || isCaptureOpen ? {} : longPressHandlers)}>
         <p className={styles.label}>{activeBlock.verbLabel}</p>
         <p className={styles.timer}>{formatRemaining(elapsedSeconds)}</p>

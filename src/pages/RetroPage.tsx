@@ -199,6 +199,14 @@ export default function RetroPage() {
     navigate(ROUTES.focus)
   }
 
+  // PH-06.1 — "오늘은 여기까지"는 조각을 버리지 않고 같은 과제 큐 후미로 되돌린다(세션 내 이월,
+  // SPEC §6 경계 주). queueBlocks가 이미 후미 append + 신규 id 발급을 하므로 그대로 재사용한다.
+  // "이어서 15분 더"는 같은 조각을 즉시 재시작해 소멸이 없으므로 재큐잉하지 않는다.
+  const handleStop = () => {
+    queueBlocks(block.taskId, [block.verbLabel])
+    navigate(ROUTES.dashboard)
+  }
+
   const thoughtActions = makeThoughtActions(
     capturedThought,
     setCapturedThought,
@@ -220,7 +228,7 @@ export default function RetroPage() {
         completed={completed}
         onNext={handleNext}
         onContinue={handleContinue}
-        onStop={() => navigate(ROUTES.dashboard)}
+        onStop={handleStop}
       />
     </div>
   )

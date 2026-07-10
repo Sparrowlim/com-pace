@@ -111,6 +111,22 @@ describe('FocusPage — countdown', () => {
   })
 })
 
+describe('FocusPage — dev-only skip button (흐름 확인용, 프로덕션 미노출)', () => {
+  test('completes the block immediately without waiting for 900 seconds', async () => {
+    const { block } = await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '스킵(DEV)' }))
+
+    expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.activeBlock).toBeNull()
+    expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'done' })
+    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+  })
+})
+
 describe('FocusPage — pause (SPEC §6 5-B, long-press only)', () => {
   test('shows the pause overlay when the active block is paused', async () => {
     const { block } = await seedActiveBlockWithPrediction()
