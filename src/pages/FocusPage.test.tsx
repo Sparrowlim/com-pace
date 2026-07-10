@@ -27,6 +27,7 @@ async function seedActiveBlockWithPrediction() {
 }
 
 beforeEach(() => {
+  localStorage.clear()
   useAppStore.setState({
     tasks: [],
     queuedBlocks: [],
@@ -38,6 +39,8 @@ beforeEach(() => {
     energyCells: [],
     lastResolvedBlock: null,
     capturedThought: null,
+    dischargeMode: false,
+    dischargeEndMessage: null,
   })
 })
 
@@ -255,5 +258,35 @@ describe('FocusPage — energy cell date', () => {
     await screen.findByText('RETRO_STUB')
     const cell = useAppStore.getState().energyCells[0]
     expect(cell?.date).toBe(todayDateString())
+  })
+})
+
+// PH-08 code review CRITICAL regression — a stale ambient `dischargeMode` flag (left on by
+// back-button/away-navigation before any block was ever started under discharge) must never
+// misclassify a later, unrelated normal block as discharge. The finish branch must key off the
+// block-scoped dischargeBlockPointer, not the session-wide flag, so this normal block still
+// lights energy, resolves its prediction, and reaches the real retro screen.
+describe('FocusPage — stale dischargeMode does not leak into an unrelated normal block', () => {
+  test('completes as a normal block: energy lights, prediction resolves, retro is visited (not the dashboard)', async () => {
+    useAppStore.setState({ dischargeMode: true })
+    const { block } = await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    // 방전 화면을 거치지 않고 이 블록을 시작했으므로 dischargeBlockPointer는 비어 있다 — 시각
+    // 모드도 이 표식으로 결정되므로 stale dischargeMode에도 불구하고 focus여야 한다.
+    expect(document.querySelector('[data-mode="focus"]')).toBeInTheDocument()
+    expect(document.querySelector('[data-mode="discharge"]')).not.toBeInTheDocument()
+    const user = userEvent.setup()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+
+    await user.click(await screen.findByRole('button', { name: '그만하기' }))
+
+    expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
+    expect(state.predictions.find((p) => p.blockId === block.id)?.actual).toBe(false)
+    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+    expect(state.dischargeEndMessage).toBeNull()
   })
 })

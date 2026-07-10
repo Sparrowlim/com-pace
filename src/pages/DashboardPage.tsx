@@ -101,6 +101,22 @@ function FragmentChoice({ title, options, onChoose }: FragmentChoiceProps) {
   )
 }
 
+// PH-08 §5 — 상시 노출 저마찰 링크. 실행할 진짜 조각이 있고 지금 진행 중인 타이머가 없을 때만
+// 노출한다(과제 소진/타이머 진행 중엔 방전으로 갈 대상이 없음). '고장' 라벨 없이 초대 톤만.
+function DischargeLink({ onEnter }: { onEnter: () => void }) {
+  return (
+    <Button variant="secondary" onClick={onEnter}>
+      오늘은 가볍게 갈까요
+    </Button>
+  )
+}
+
+// PH-08 §5 — 회고가 스킵되므로 방전 종료 후 대시보드가 대신 보여주는 한 줄. 이 페이지에 머무는
+// 동안만 보이고, 언마운트 시 정리된다(RetroPage의 capturedThought와 동일 패턴).
+function DischargeEndBanner({ message }: { message: string }) {
+  return <p className={styles.dischargeEndBanner}>{message}</p>
+}
+
 type ActiveTaskSectionProps = {
   hasActiveBlock: boolean
   task: Task | undefined
@@ -160,20 +176,36 @@ function ActiveTaskSection({
   )
 }
 
+function useDashboardStoreState() {
+  return {
+    tasks: useAppStore((state) => state.tasks),
+    queuedBlocks: useAppStore((state) => state.queuedBlocks),
+    activeBlock: useAppStore((state) => state.activeBlock),
+    energyCells: useAppStore((state) => state.energyCells),
+    loadEnergyCellsForDate: useAppStore((state) => state.loadEnergyCellsForDate),
+    addTask: useAppStore((state) => state.addTask),
+    promoteQueuedBlock: useAppStore((state) => state.promoteQueuedBlock),
+    dischargeEndMessage: useAppStore((state) => state.dischargeEndMessage),
+    setDischargeEndMessage: useAppStore((state) => state.setDischargeEndMessage),
+  }
+}
+
 export default function DashboardPage() {
-  const tasks = useAppStore((state) => state.tasks)
-  const queuedBlocks = useAppStore((state) => state.queuedBlocks)
-  const activeBlock = useAppStore((state) => state.activeBlock)
-  const energyCells = useAppStore((state) => state.energyCells)
-  const loadEnergyCellsForDate = useAppStore((state) => state.loadEnergyCellsForDate)
-  const addTask = useAppStore((state) => state.addTask)
-  const promoteQueuedBlock = useAppStore((state) => state.promoteQueuedBlock)
+  const store = useDashboardStoreState()
+  const { tasks, queuedBlocks, activeBlock, energyCells, promoteQueuedBlock } = store
+  const { loadEnergyCellsForDate, addTask, dischargeEndMessage, setDischargeEndMessage } = store
   const navigate = useNavigate()
   const [draftTitle, setDraftTitle] = useState('')
 
   useEffect(() => {
     loadEnergyCellsForDate(todayDateString())
   }, [loadEnergyCellsForDate])
+
+  // PH-08 §5 — 방전 종료 한 줄은 이 페이지에 머무는 동안만 보이고 떠날 때 정리한다(RetroPage의
+  // capturedThought 언마운트 정리와 동일 패턴).
+  useEffect(() => {
+    return () => setDischargeEndMessage(null)
+  }, [setDischargeEndMessage])
 
   // 최초 실행 라우팅 게이트(PH-07) — 온보딩을 마치지 않은 사용자는 항상 온보딩으로 우회된다
   // (SplitPage/PredictPage가 이미 쓰는 국소 <Navigate replace> 가드와 동일 스타일 — 훅 호출 이후에
@@ -193,8 +225,13 @@ export default function DashboardPage() {
   const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
   const fragmentOptions = task ? selectQueuedBlocksForTask(queuedBlocks, task.id) : []
 
+  // PH-08 §5 In-Scope A — 실행할 진짜 조각이 있고 지금 진행 중인 타이머가 없을 때만 방전 링크를
+  // 노출한다(과제 소진·타이머 진행 중엔 방전으로 갈 대상이 없음).
+  const canEnterDischarge = !activeBlock && !!task && task.splitDone && !!next
+
   return (
     <div className={styles.page}>
+      {dischargeEndMessage && <DischargeEndBanner message={dischargeEndMessage} />}
       <ActiveTaskSection
         hasActiveBlock={!!activeBlock}
         task={task}
@@ -212,6 +249,7 @@ export default function DashboardPage() {
           navigate(ROUTES.predict)
         }}
       />
+      {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}
       <EnergyBar filledCount={energyCells.length} />
     </div>
   )

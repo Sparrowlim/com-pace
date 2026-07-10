@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store'
 import { idbStorage } from '../storage/idb-storage'
 import { activeSessionPointer } from '../lib/active-session-pointer'
+import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
 import { computeElapsedSeconds, judgeSessionReturn } from '../lib/session-timer'
 import { nowIso, todayDateString } from '../lib/time'
+import { DISCHARGE_END_MESSAGE } from './useFocusTimer'
 import { ROUTES } from '../routes/paths'
 import type { Block } from '../types/block'
 import type { Prediction } from '../types/prediction'
@@ -41,16 +43,23 @@ async function recoverSession(navigate: (path: string) => void): Promise<void> {
   const block = await idbStorage.findById<Block>('blocks', blockId)
   if (!block || (block.status !== 'in_progress' && block.status !== 'paused')) {
     activeSessionPointer.clear()
+    dischargeBlockPointer.clear()
     return
   }
 
   const now = nowIso()
   const elapsedSeconds = computeElapsedSeconds(block.startedAt, 0, new Date(now).getTime())
   const judgment = judgeSessionReturn(block.startedAt, now, elapsedSeconds)
+  // code review CRITICAL fix — this reboot-safe pointer (not the in-memory dischargeMode, which
+  // never survives a reload) is the only way to know this recovered block was started under
+  // discharge, so a resumed/finished discharge block isn't double-lit or routed through retro.
+  const wasDischarge = dischargeBlockPointer.get() === block.id
 
   const store = useAppStore.getState()
 
   if (judgment === 'continue') {
+    // dischargeBlockPointer is left untouched here — the block is still running and will reach
+    // finish() later through the normal FocusPage/useFocusTimer flow, which needs to read it then.
     useAppStore.setState({ activeBlock: block, elapsedSeconds })
     navigate(ROUTES.focus)
     return
@@ -59,6 +68,20 @@ async function recoverSession(navigate: (path: string) => void): Promise<void> {
   // finish/carryover 둘 다 기존 complete()/markIncomplete()를 재사용한다 — activeBlock을 먼저
   // 세팅해야 그 액션들이 참조하는 get().activeBlock이 복구 대상 블록이 된다.
   useAppStore.setState({ activeBlock: block, elapsedSeconds })
+  if (wasDischarge) {
+    dischargeBlockPointer.clear()
+  }
+
+  if (judgment === 'finish' && wasDischarge) {
+    // PH-08 §5 — 회고 전체 스킵, 에너지는 방전 시작 시점에 이미 점등됐으므로 재점등하지 않는다
+    // (그렇지 않으면 재기동 복구가 매번 에너지를 이중으로 켠다).
+    await store.complete()
+    store.setCapturedThought(null)
+    store.exitDischarge()
+    store.setDischargeEndMessage(DISCHARGE_END_MESSAGE)
+    navigate(ROUTES.dashboard)
+    return
+  }
 
   if (judgment === 'finish') {
     await store.complete()

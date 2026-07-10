@@ -16,6 +16,7 @@ function renderDashboard() {
       { path: ROUTES.split, element: <div>SPLIT_STUB</div> },
       { path: ROUTES.predict, element: <div>PREDICT_STUB</div> },
       { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
+      { path: ROUTES.dischargeEntry, element: <div>DISCHARGE_ENTRY_STUB</div> },
     ],
     { initialEntries: [ROUTES.dashboard] },
   )
@@ -30,6 +31,8 @@ beforeEach(() => {
     queuedBlocks: [],
     activeBlock: null,
     energyCells: [],
+    dischargeMode: false,
+    dischargeEndMessage: null,
   })
 })
 
@@ -172,5 +175,65 @@ describe('DashboardPage — energy bar', () => {
     renderDashboard()
 
     expect(await screen.findByRole('group', { name: '오늘 2칸' })).toBeInTheDocument()
+  })
+})
+
+describe('DashboardPage — discharge link (PH-08 §5)', () => {
+  test('is hidden when there is no active task (zero state)', async () => {
+    renderDashboard()
+    await screen.findByRole('textbox')
+
+    expect(screen.queryByRole('button', { name: '오늘은 가볍게 갈까요' })).not.toBeInTheDocument()
+  })
+
+  test('is hidden while the task is not split yet (no runnable fragment)', async () => {
+    await useAppStore.getState().addTask('청소')
+    renderDashboard()
+    await screen.findByText('청소')
+
+    expect(screen.queryByRole('button', { name: '오늘은 가볍게 갈까요' })).not.toBeInTheDocument()
+  })
+
+  test('is hidden while a timer is already in progress', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    await useAppStore.getState().startBlock(task.id, '책상 정리하기')
+    renderDashboard()
+    await screen.findByText('타이머가 진행 중이에요')
+
+    expect(screen.queryByRole('button', { name: '오늘은 가볍게 갈까요' })).not.toBeInTheDocument()
+  })
+
+  test('is shown and navigates to the discharge entry when a runnable fragment exists', async () => {
+    const user = userEvent.setup()
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    renderDashboard()
+    await screen.findByText(/책상 정리하기/)
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 가볍게 갈까요' }))
+
+    expect(await screen.findByText('DISCHARGE_ENTRY_STUB')).toBeInTheDocument()
+  })
+})
+
+describe('DashboardPage — discharge end message (PH-08 §5, retro skipped)', () => {
+  test('renders the one-line ending copy when present and clears it on unmount', async () => {
+    useAppStore.setState({ dischargeEndMessage: '오늘 15분, 켠 것만으로 충분해요' })
+    const { unmount } = render(
+      <RouterProvider
+        router={createMemoryRouter([{ path: ROUTES.dashboard, element: <DashboardPage /> }], {
+          initialEntries: [ROUTES.dashboard],
+        })}
+      />,
+    )
+
+    expect(await screen.findByText('오늘 15분, 켠 것만으로 충분해요')).toBeInTheDocument()
+
+    unmount()
+
+    expect(useAppStore.getState().dischargeEndMessage).toBeNull()
   })
 })

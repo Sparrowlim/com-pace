@@ -69,32 +69,32 @@
 
 **A. 방전 발동 링크 (`src/pages/DashboardPage.tsx`)**
 
-- [ ] 정상 대시보드에 상시 노출 저마찰 링크("오늘은 가볍게 갈까요" 류, 초대 톤) → 방전 진입으로 이동. '고장'·처벌 라벨 없음
-- [ ] 큐 소진(zero) 상태에서의 링크 노출/숨김 규칙 확정(설계 결정 3)
+- [x] 정상 대시보드에 상시 노출 저마찰 링크("오늘은 가볍게 갈까요" 류, 초대 톤) → 방전 진입으로 이동. '고장'·처벌 라벨 없음
+- [x] 큐 소진(zero) 상태에서의 링크 노출/숨김 규칙 확정(설계 결정 3) — 실행할 진짜 조각(`task.splitDone && next`)이 있고 타이머가 진행 중이지 않을 때만 노출. 과제 미입력·미분할·타이머 진행 중엔 숨김.
 
 **B. 방전 진입 확인 (신규 소형 화면/시트)**
 
-- [ ] "딱 하나만 할래요"(→ `dischargeMode` on, 방전 대시보드) / "평소 모드로 볼게요"(→ 대시보드) 2지선다
-- [ ] 낙인 없는 안내 카피 1~2줄(자체 창작), 결정 피로 없는 닫힌 2지선다
+- [x] "딱 하나만 할래요"(→ `dischargeMode` on, 방전 대시보드) / "평소 모드로 볼게요"(→ 대시보드) 2지선다
+- [x] 낙인 없는 안내 카피 1~2줄(자체 창작), 결정 피로 없는 닫힌 2지선다
 
 **C. 방전 대시보드 (모드 분기)**
 
-- [ ] `dischargeMode` 시 대시보드가 차분한 표면(`data-mode="discharge"`) + "타이머만 켜면 승리" 카피 렌더, 진짜 과제(큐 선두) 노출
-- [ ] "타이머만 켜면 승리" → 집중(방전) **직행**(`/predict` 미경유)
-- [ ] "평소 모드로 돌아가기" → `dischargeMode` off + 대시보드
+- [x] `dischargeMode` 시 대시보드가 차분한 표면(`data-mode="discharge"`) + "타이머만 켜면 승리" 카피 렌더, 진짜 과제(큐 선두) 노출
+- [x] "타이머만 켜면 승리" → 집중(방전) **직행**(`/predict` 미경유)
+- [x] "평소 모드로 돌아가기" → `dischargeMode` off + 대시보드
 
 **D. 집중(방전 분기) (`src/pages/FocusPage.tsx` / `useFocusTimer`)**
 
-- [ ] 방전 진입 시 `startBlock(taskId, 큐 선두 verbLabel)` — **`dequeue` 호출 없음**(설계 결정 3)
-- [ ] **시작 즉시** `lightEnergyCell(blockId, today)`(설계 결정 4) — 정상 루프의 종료 시 점등과 분기
-- [ ] 15분 타이머는 그대로 흐름(길이 완화 ❌), `data-mode="discharge"` 래퍼(단 다크 오버레이는 focus 전용 — discharge 표면과 충돌 없는지 착수 시 확인)
-- [ ] 종료 시 `/retro` 미경유 → 대시보드 직행 + `dischargeMode` off + 방전 종료 한 줄 노출(설계 결정 6·7)
-- [ ] 딴생각 포착·일시정지(PH-06)는 방전에서도 유지되나 회고 스킵과 무충돌인지 확인(포착물은 회고에서 처리됐는데 방전은 회고 없음 → 방전 중 포착 비활성 또는 종료 시 조용히 폐기, 착수 시 확정)
+- [x] 방전 진입 시 `startBlock(taskId, 큐 선두 verbLabel)` — **`dequeue` 호출 없음**(설계 결정 3) — `DischargeDashboardPage.handleStart`가 담당
+- [x] **시작 즉시** `lightEnergyCell(blockId, today)`(설계 결정 4) — 정상 루프의 종료 시 점등과 분기 — `/focus` 진입 전 `DischargeDashboardPage`에서 호출
+- [x] 15분 타이머는 그대로 흐름(길이 완화 ❌), `data-mode="discharge"` 래퍼 — focus 전용 다크 오버레이(`[data-mode="focus"]`)와는 배타적으로 적용되어 충돌 없음(둘 중 하나만 항상 세팅)
+- [x] 종료 시 `/retro` 미경유 → 대시보드 직행 + `dischargeMode` off + 방전 종료 한 줄 노출(설계 결정 6·7) — `useFocusTimer`의 `finishDischargePath` + `onFinished(true)`
+- [x] 딴생각 포착·일시정지(PH-06)는 방전에서도 유지되나 회고 스킵과 무충돌 — 일시정지/재개는 무변경 재사용, 포착물은 방전 종료 시 `setCapturedThought(null)`로 조용히 폐기(회고 화면이 없어 처리 UI가 없음)
 
 **E. 상태 슬라이스 (`dischargeMode`)**
 
-- [ ] 세션 범위 `dischargeMode: boolean` + `enterDischarge()`/`exitDischarge()`(인메모리, Storage 무변경) + 유닛 테스트
-- [ ] 앱 재기동 시 방전 미복원(세션 범위 — post-MVP 아님, 방전은 그 순간의 상태)
+- [x] 세션 범위 `dischargeMode: boolean` + `enterDischarge()`/`exitDischarge()`(인메모리, Storage 무변경) + 유닛 테스트 — `src/store/slices/discharge-slice.ts` + `discharge-slice.test.ts`
+- [x] 앱 재기동 시 방전 미복원(세션 범위 — post-MVP 아님, 방전은 그 순간의 상태) — Storage/영속 계층에 손대지 않았으므로 자연히 성립(검증 대상 없음)
 
 ## DO NOT CHANGE (이 위상 국소 — 전역은 README §0)
 
@@ -116,21 +116,21 @@
 
 **공통:**
 
-- [ ] `npm run typecheck` exit 0
-- [ ] `npm run lint` exit 0
-- [ ] `npm run test:coverage` 통과, 커버리지 80%+ 유지
-- [ ] `npm run build` exit 0
-- [ ] SPEC 커버리지 표의 모든 행이 실제 구현과 일치(완료 선언 직전 재확인)
+- [x] `npm run typecheck` exit 0
+- [x] `npm run lint` exit 0 (경고 6건 전부 이 위상 이전부터 있던 테스트 파일 `max-lines-per-function` — 신규 코드 0건)
+- [x] `npm run test:coverage` 통과(260/260), 커버리지 80%+ 유지(97.76% stmt)
+- [x] `npm run build` exit 0
+- [x] SPEC 커버리지 표의 모든 행이 실제 구현과 일치(완료 선언 직전 재확인) — 위 In-Scope A~E 각 항목에 구현 위치 주석으로 대조 완료
 
 **방전 고유:**
 
-- [ ] 방전 시작 시 `/predict` 라우트 진입 0회, 방전 종료 시 `/retro` 진입 0회(라우트 어서션)
-- [ ] 방전 집중 **시작** 시점에 에너지 셀 카운트 +1(시작=승리, 종료 아님)
-- [ ] 방전 전후 해당 과제 `queuedBlocks` 길이 불변(큐 미소비 — 진짜 과제 보존)
-- [ ] 방전 에너지 fill computed color === 정상 블록 fill computed color(무처벌·시각 동일)
-- [ ] 방전 진입·대시보드·집중·종료 전 화면에서 `danger|error|warning|fail` 클래스·부정/낙인 문구 0건
-- [ ] `dischargeMode` on/off 전이 유닛(진입·평소 복귀·종료 시 해제)
-- [ ] (레이아웃) 방전 진입 시트·방전 대시보드 320/375px 가로 스크롤 0 · 링크/버튼 ≥44×44
+- [x] 방전 시작 시 `/predict` 라우트 진입 0회, 방전 종료 시 `/retro` 진입 0회(라우트 어서션) — `core-loop.integration.test.tsx` PH-08 describe
+- [x] 방전 집중 **시작** 시점에 에너지 셀 카운트 +1(시작=승리, 종료 아님) — 동 통합 테스트 + `DischargeDashboardPage.test.tsx`
+- [x] 방전 전후 해당 과제 `queuedBlocks` 길이 불변(큐 미소비 — 진짜 과제 보존) — 동 테스트들
+- [x] 방전 에너지 fill computed color === 정상 블록 fill computed color(무처벌·시각 동일) — `EnergyCell`이 모드 무관 단일 `--evidence-fill` CSS 선언 1개만 가짐을 이미 `EnergyCell.test.tsx`가 고정, `tokens.generated.test.ts`가 `[data-mode="discharge"]`가 `--evidence-fill`을 재정의하지 않음을 고정(PH-04 산출물 재사용, 별도 신규 테스트 불필요)
+- [x] 방전 진입·대시보드·집중·종료 전 화면에서 `danger|error|warning|fail` 클래스·부정/낙인 문구 0건 — `DischargeEntryPage.test.tsx`가 낙인 문구 부재를 어서션, 나머지 화면은 새 클래스 신설 없음(기존 토큰 재사용)
+- [x] `dischargeMode` on/off 전이 유닛(진입·평소 복귀·종료 시 해제) — `discharge-slice.test.ts` + 각 페이지 테스트
+- [x] (레이아웃) 방전 진입 시트·방전 대시보드 320/375px 가로 스크롤 0 · 링크/버튼 ≥44×44 — 수동 Playwright 왕복으로 확인(§Changelog 참조), `Button`/`OptionRow` 기존 44×44 보장 컴포넌트 재사용(신규 인터랙티브 요소 없음)
 
 ## Runnable-State 커맨드
 
@@ -142,3 +142,5 @@ npm run typecheck && npm run lint && npm run test:coverage && npm run build
 
 - **v0.1** — 헤더만 작성.
 - **v0.2** — 착수 직전 상세화(확장 템플릿). SSOT 발췌(SPEC §5 + SCREEN-FLOW §5/§2 전이) · SPEC 커버리지 표 · 전이→명명테스트 · 설계 결정 7개(인메모리 모드 플래그·예측 생략 직행·큐 미소비 보존·시작 즉시 점등·discharge 토큰 재사용·회고 스킵 종료·자체 카피) · In-Scope A~E · DO NOT CHANGE · Positive Non-Goals · 수용 기준 확정. **구현·Runnable State는 다음 세션**(PH-06.1 세션 내 이월 수정 후 착수 권장).
+- **v0.3** — PH-08(방전 모드) Runnable State 통과, 완료로 갱신. `discharge-slice.ts`(`dischargeMode`·`dischargeEndMessage`·`enterDischarge`/`exitDischarge`/`setDischargeEndMessage`, 세션 범위 인메모리) 신설 + 스토어 결합. `DischargeEntryPage`(2지선다 확인)·`DischargeDashboardPage`(진짜 과제 노출, `startBlock` 후 즉시 `lightEnergyCell`, `dequeue` 없음)를 플레이스홀더에서 실제 구현으로 교체. `useFocusTimer`에 `finishDischargePath`/`finishNormalPath` 분기 신설 — 방전 종료는 재점등·예측해석·회고 진입 없이 `dischargeMode` 해제 + 자체 창작 한 줄("오늘 15분, 켠 것만으로 충분해요") 세팅 후 대시보드로 직행. `DashboardPage`에 상시 노출 저마찰 링크(실행 가능한 조각이 있고 타이머 미진행 시에만 노출)와 방전 종료 배너(언마운트 시 정리) 추가. 기존 `router.test.tsx`의 "방전 페이지는 플레이스홀더" 테스트를 제거하고 실제 가드 리다이렉트 테스트로 교체. 전체 260개 테스트 통과(커버리지 97.76% stmt), typecheck/lint(신규 경고 0건)/build 전부 exit 0. 임시 Playwright 스펙(커밋 안 함)으로 320px·375px 왕복 확인 — 온보딩→아무거나 입력→쪼개기→대시보드 방전 링크→방전 진입 2지선다→방전 대시보드→집중(가상 시계로 15분 진행)→방전 종료 배너까지 가로 스크롤 0, `/predict`·`/retro` 미경유 실증.
+- **v0.4** — **code-reviewer 소급 적용 + CRITICAL 수정.** v0.3 완료 선언 직후(사용자 지적으로) `code-reviewer` 에이전트를 뒤늦게 호출한 결과, 세션 범위 `dischargeMode` 앰비언트 플래그를 `useFocusTimer.finish()`/`FocusPage`의 시각 모드/`useSessionRecovery`가 그대로 읽어 분기하던 것이 **CRITICAL**로 지적됨 — 방전 대시보드에서 블록을 시작하지 않고 뒤로가기/다른 화면으로 이탈해도 `dischargeMode`가 켜진 채 남을 수 있고, 그 상태에서 완전히 무관한 정상 블록을 진행·종료하면 그 블록이 방전으로 오분류돼 에너지 미점등·예측 미해석·회고 미경유가 조용히 새는 버그였다(재기동 중 방전 블록 복구 시 이중 점등하는 별개 재현 경로도 동일 근본 원인). **수정:** `dischargeBlockPointer`(`src/lib/discharge-block-pointer.ts`, `activeSessionPointer`와 동일한 localStorage 포인터 패턴) 신설 — "이 블록이 방전으로 시작됐는가"를 세션 플래그가 아니라 블록 자신에 붙여 추적. `DischargeDashboardPage.handleStart`가 `startBlock` 직후 포인터를 세팅하고, `useFocusTimer.finish()`·`FocusPage`의 시각 모드·`useSessionRecovery.recoverSession`(재기동 복구) 셋 다 이 포인터로만 분기하도록 교체(`dischargeMode`는 이제 방전 진입/대시보드 화면 노출만 게이트). `DischargeDashboardPage`에 언마운트 시 `dischargeMode` 무조건 해제(방어적 이중 안전장치) + 시작 버튼 재진입 가드(`isStarting`, MEDIUM 지적)도 함께 추가. 회귀 테스트 8건 신설(`discharge-block-pointer.test.ts` 4건, `FocusPage.test.tsx`의 stale-flag 회귀 1건, `useSessionRecovery.test.tsx`의 재기동 방전 종료 분기 2건, `DischargeDashboardPage.test.tsx`의 포인터 태깅·더블탭·언마운트 리셋 3건). 전체 270개 테스트 통과(커버리지 97.69% stmt), typecheck/lint(신규 경고 0건)/build 전부 exit 0.

@@ -5,6 +5,7 @@ import { BottomSheet } from '../components/BottomSheet'
 import { useFocusTimer, formatRemaining } from '../hooks/useFocusTimer'
 import { useLongPress } from '../hooks/useLongPress'
 import { useAppStore } from '../store'
+import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
 import { ROUTES } from '../routes/paths'
 import styles from './FocusPage.module.css'
 
@@ -63,8 +64,8 @@ function CaptureModal({ isOpen, draft, onDraftChange, onDone }: CaptureModalProp
 
 export default function FocusPage() {
   const navigate = useNavigate()
-  const { activeBlock, elapsedSeconds, finish, isFinishing } = useFocusTimer(() =>
-    navigate(ROUTES.retro),
+  const { activeBlock, elapsedSeconds, finish, isFinishing } = useFocusTimer((wasDischarge) =>
+    navigate(wasDischarge ? ROUTES.dashboard : ROUTES.retro),
   )
   const pause = useAppStore((state) => state.pause)
   const resume = useAppStore((state) => state.resume)
@@ -99,8 +100,14 @@ export default function FocusPage() {
     setIsCaptureOpen(false)
   }
 
+  // code review CRITICAL fix — derive the visual mode from the block-scoped pointer, not the
+  // ambient dischargeMode flag (see useFocusTimer.finish for the full rationale). This also
+  // makes the surface correct after a reload recovers a discharge block mid-flight, since
+  // dischargeMode never survives a reload but this pointer does.
+  const isDischargeBlock = dischargeBlockPointer.get() === activeBlock.id
+
   return (
-    <div className={styles.page} data-mode="focus">
+    <div className={styles.page} data-mode={isDischargeBlock ? 'discharge' : 'focus'}>
       <DevSkipButton onSkip={() => finish(true)} />
       <div className={styles.tapArea} {...(isPaused || isCaptureOpen ? {} : longPressHandlers)}>
         <p className={styles.label}>{activeBlock.verbLabel}</p>

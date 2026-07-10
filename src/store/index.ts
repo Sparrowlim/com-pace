@@ -6,6 +6,7 @@ import { createPredictionSlice, type PredictionSlice } from './slices/prediction
 import { createSessionSlice, type SessionSlice } from './slices/session-slice'
 import { createBlockQueueSlice, type BlockQueueSlice } from './slices/block-queue-slice'
 import { createRetroContextSlice, type RetroContextSlice } from './slices/retro-context-slice'
+import { createDischargeSlice, type DischargeSlice } from './slices/discharge-slice'
 
 export type AppState = TaskSlice &
   TimerSlice &
@@ -13,7 +14,8 @@ export type AppState = TaskSlice &
   PredictionSlice &
   SessionSlice &
   BlockQueueSlice &
-  RetroContextSlice
+  RetroContextSlice &
+  DischargeSlice
 
 export const useAppStore = create<AppState>()((...a) => ({
   ...createTaskSlice(...a),
@@ -23,4 +25,5 @@ export const useAppStore = create<AppState>()((...a) => ({
   ...createSessionSlice(...a),
   ...createBlockQueueSlice(...a),
   ...createRetroContextSlice(...a),
+  ...createDischargeSlice(...a),
 }))

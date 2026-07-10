@@ -22,6 +22,8 @@ beforeEach(() => {
     lastResolvedBlock: null,
     capturedThought: null,
     timeSenseFeedback: null,
+    dischargeMode: false,
+    dischargeEndMessage: null,
   })
 })
 
@@ -113,5 +115,52 @@ describe('core loop integration — PH-06.1 session-scoped carryover (real route
     const { queuedBlocks } = useAppStore.getState()
     expect(queuedBlocks).toHaveLength(1)
     expect(queuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
+  })
+})
+
+// PH-08 수용 기준 — 대시보드 저마찰 링크→방전 진입→방전 대시보드→집중→종료를 실제 라우트
+// 트리(스텁 없이)로 왕복하며, /predict·/retro를 전혀 거치지 않고, 시작 즉시 에너지가 점등되고,
+// 큐가 소비되지 않는지 검증한다.
+describe('core loop integration — PH-08 discharge mode (real routes)', () => {
+  test('runs discharge start-to-end without ever visiting predict or retro, preserving the queue', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const user = userEvent.setup()
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.dashboard] })
+    render(<RouterProvider router={router} />)
+
+    await user.click(await screen.findByRole('button', { name: '오늘은 가볍게 갈까요' }))
+    expect(await screen.findByRole('button', { name: '딱 하나만 할래요' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '딱 하나만 할래요' }))
+
+    expect(await screen.findByRole('button', { name: '타이머만 켜면 승리' })).toBeInTheDocument()
+    // 같은 파일의 다른 테스트가 이미 만든 에너지 칸이 fake-indexeddb에 남아 있을 수 있어(테스트 간
+    // 미초기화, 의도적) 절대 개수 대신 이 테스트가 만든 증분만 비교한다. DashboardPage의 비동기
+    // loadEnergyCellsForDate가 여기까지 오는 동안 이미 정착했으므로 여기서 기준선을 잡는다.
+    const baselineEnergyCount = useAppStore.getState().energyCells.length
+    await user.click(screen.getByRole('button', { name: '타이머만 켜면 승리' }))
+
+    // 예측 미경유 — 곧장 집중(방전 표면). 에너지는 시작 즉시 이 블록 몫으로 정확히 1칸만 는다.
+    await screen.findByText('15:00')
+    expect(document.querySelector('[data-mode="discharge"]')).toBeInTheDocument()
+    const blockAtStart = useAppStore.getState().activeBlock
+    expect(useAppStore.getState().energyCells.length).toBe(baselineEnergyCount + 1)
+    expect(
+      useAppStore.getState().energyCells.some((cell) => cell.blockId === blockAtStart?.id),
+    ).toBe(true)
+    expect(useAppStore.getState().queuedBlocks).toHaveLength(1)
+
+    advance15MinutesAndTick()
+
+    // 회고 미경유 — 곧장 대시보드 + 한 줄 + dischargeMode 해제. 종료 시 재점등 없음(칸 수 불변).
+    expect(await screen.findByText('오늘 15분, 켠 것만으로 충분해요')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.dischargeMode).toBe(false)
+    expect(state.energyCells.length).toBe(baselineEnergyCount + 1)
+    expect(state.queuedBlocks).toHaveLength(1)
+    expect(state.queuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
   })
 })

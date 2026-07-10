@@ -5,6 +5,8 @@ import { useSessionRecovery } from './useSessionRecovery'
 import { useAppStore } from '../store'
 import { idbStorage } from '../storage/idb-storage'
 import { activeSessionPointer } from '../lib/active-session-pointer'
+import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
+import { DISCHARGE_END_MESSAGE } from './useFocusTimer'
 import { ROUTES } from '../routes/paths'
 import type { Block } from '../types/block'
 
@@ -13,14 +15,20 @@ function RecoveryProbe() {
   return <div>PROBE</div>
 }
 
+// ROUTES.dashboard is '/' — mounting the probe at a distinct path (rather than '/' itself) is
+// required so a recovery-driven navigate(ROUTES.dashboard) is observable as a real route change
+// instead of colliding with the probe's own route.
+const BOOT_PATH = '/__boot'
+
 function renderProbe() {
   const router = createMemoryRouter(
     [
-      { path: '/', element: <RecoveryProbe /> },
+      { path: BOOT_PATH, element: <RecoveryProbe /> },
       { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
       { path: ROUTES.retro, element: <div>RETRO_STUB</div> },
+      { path: ROUTES.dashboard, element: <div>DASHBOARD_STUB</div> },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [BOOT_PATH] },
   )
   render(<RouterProvider router={router} />)
 }
@@ -54,6 +62,8 @@ beforeEach(() => {
     energyCells: [],
     lastResolvedBlock: null,
     capturedThought: null,
+    dischargeMode: false,
+    dischargeEndMessage: null,
   })
 })
 
@@ -179,5 +189,43 @@ describe('useSessionRecovery — stale/already-resolved pointer', () => {
     await screen.findByText('PROBE')
     await waitFor(() => expect(activeSessionPointer.get()).toBeNull())
     expect(useAppStore.getState().activeBlock).toBeNull()
+  })
+
+  test('also clears a leftover discharge pointer so it can never tag a future, unrelated block', async () => {
+    await seedOrphanedBlock({ status: 'done', endedAt: new Date().toISOString() })
+    dischargeBlockPointer.set('some-other-stale-block-id')
+
+    renderProbe()
+
+    await screen.findByText('PROBE')
+    await waitFor(() => expect(dischargeBlockPointer.get()).toBeNull())
+  })
+})
+
+// PH-08 code review CRITICAL fix — a discharge block recovered on reboot (at/over 900s) must be
+// finished as discharge: no second energy light (already lit at discharge-dashboard start, before
+// the reload), no prediction resolution attempt, and straight to the dashboard rather than retro.
+describe('useSessionRecovery — discharge (same day, at/over 900s, recovered after reload)', () => {
+  test('finishes as discharge: no double energy light, no retro, dischargeMode/captured-thought cleared', async () => {
+    const startedAt = new Date(Date.now() - 20 * 60_000).toISOString()
+    const block = await seedOrphanedBlock({ startedAt })
+    dischargeBlockPointer.set(block.id)
+    // 방전 대시보드가 시작 시점에 이미 점등했던 그 칸을 흉내낸다 — 재기동 복구가 이를 다시
+    // 점등하면 안 된다(정확히 1회 점등 불변식).
+    await useAppStore.getState().lightEnergyCell(block.id, '2026-07-07')
+    useAppStore.setState({ dischargeMode: true, capturedThought: '아까 스친 생각' })
+
+    renderProbe()
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.activeBlock).toBeNull()
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
+    expect(state.dischargeMode).toBe(false)
+    expect(state.capturedThought).toBeNull()
+    expect(state.dischargeEndMessage).toBe(DISCHARGE_END_MESSAGE)
+    expect(dischargeBlockPointer.get()).toBeNull()
+    const persisted = await idbStorage.findById<Block>('blocks', block.id)
+    expect(persisted?.status).toBe('done')
   })
 })

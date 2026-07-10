@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useAppStore } from '../store'
 import { nowIso, todayDateString } from '../lib/time'
 import { FOCUS_SECONDS } from '../lib/session-timer'
+import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
+import type { Block } from '../types/block'
 
 export { FOCUS_SECONDS }
 
@@ -12,27 +14,83 @@ export function formatRemaining(elapsedSeconds: number): string {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+// PH-08 §5 — 회고 전체 스킵의 유일한 사용자 대면 카피(과정 인정, 결과 판단 ❌). 자체 창작
+// (DECISIONS 부록A, 원문 차용 금지).
+export const DISCHARGE_END_MESSAGE = '오늘 15분, 켠 것만으로 충분해요'
+
+// 정상 루프의 회고 진입 준비 — 방전 분기와 갈라지는 지점(useFocusTimer 본문 길이 억제 겸용).
+async function finishNormalPath(
+  block: Block,
+  completed: boolean,
+  actions: {
+    resolvePrediction: (blockId: string, completed: boolean) => Promise<unknown>
+    lightEnergyCell: (blockId: string, date: string) => Promise<unknown>
+    setLastResolvedBlock: (block: Block) => void
+  },
+): Promise<void> {
+  // complete()/markIncomplete() clear activeBlock instead of returning the updated row, so the
+  // retro screen's context is rebuilt here to match what they just persisted (SPEC §6 D-09 —
+  // energy lights regardless of completed/incomplete).
+  actions.setLastResolvedBlock({
+    ...block,
+    status: completed ? 'done' : 'incomplete',
+    endedAt: nowIso(),
+  })
+
+  const hasPrediction = useAppStore
+    .getState()
+    .predictions.some((prediction) => prediction.blockId === block.id)
+  if (hasPrediction) {
+    await actions.resolvePrediction(block.id, completed)
+  }
+  await actions.lightEnergyCell(block.id, todayDateString())
+}
+
+// 방전 종료 준비(PH-08 §5) — 에너지는 방전 대시보드가 시작 시점에 이미 점등했으므로 재점등하지
+// 않고, 예측도 애초에 없으므로 resolvePrediction도 없다(설계 결정 2·4). 딴생각 포착물은 처리할
+// 회고 화면이 없으므로 조용히 폐기한다(설계 결정 7 · In-Scope D).
+function finishDischargePath(actions: {
+  setCapturedThought: (text: string | null) => void
+  exitDischarge: () => void
+  setDischargeEndMessage: (message: string | null) => void
+}): void {
+  actions.setCapturedThought(null)
+  actions.exitDischarge()
+  actions.setDischargeEndMessage(DISCHARGE_END_MESSAGE)
+}
+
+function useFocusTimerActions() {
+  return {
+    tick: useAppStore((state) => state.tick),
+    complete: useAppStore((state) => state.complete),
+    markIncomplete: useAppStore((state) => state.markIncomplete),
+    resolvePrediction: useAppStore((state) => state.resolvePrediction),
+    lightEnergyCell: useAppStore((state) => state.lightEnergyCell),
+    setLastResolvedBlock: useAppStore((state) => state.setLastResolvedBlock),
+    setCapturedThought: useAppStore((state) => state.setCapturedThought),
+    exitDischarge: useAppStore((state) => state.exitDischarge),
+    setDischargeEndMessage: useAppStore((state) => state.setDischargeEndMessage),
+  }
+}
+
 /**
  * 15분 집중 타이머 오케스트레이션 — FocusPage에서 분리해 독립적으로 테스트 가능하게 한다.
  * finish()는 렌더 변수가 아니라 호출 시점의 스토어 스냅샷(getState)만 참조한다 — 완료/그만하기
  * 경합 없이 항상 최신 activeBlock/predictions를 보기 위함이다.
+ *
+ * onFinished는 방전 종료 여부를 인자로 받는다 — 방전은 /retro를 건너뛰고 대시보드로 직행한다
+ * (PH-08 §5, 착수 전 설계 결정 2·6).
  */
-export function useFocusTimer(onFinished: () => void) {
+export function useFocusTimer(onFinished: (wasDischarge: boolean) => void) {
   const activeBlock = useAppStore((state) => state.activeBlock)
   const elapsedSeconds = useAppStore((state) => state.elapsedSeconds)
-  const tick = useAppStore((state) => state.tick)
-  const complete = useAppStore((state) => state.complete)
-  const markIncomplete = useAppStore((state) => state.markIncomplete)
-  const resolvePrediction = useAppStore((state) => state.resolvePrediction)
-  const lightEnergyCell = useAppStore((state) => state.lightEnergyCell)
-  const setLastResolvedBlock = useAppStore((state) => state.setLastResolvedBlock)
+  const actions = useFocusTimerActions()
+  const { tick } = actions
   const finishedRef = useRef(false)
 
   useEffect(() => {
     if (!activeBlock) return
-    const id = window.setInterval(() => {
-      tick()
-    }, 1000)
+    const id = window.setInterval(() => tick(), 1000)
     return () => window.clearInterval(id)
   }, [activeBlock, tick])
 
@@ -41,29 +99,31 @@ export function useFocusTimer(onFinished: () => void) {
     const block = useAppStore.getState().activeBlock
     if (!block) return
     finishedRef.current = true
+    // code review CRITICAL fix — "was this discharge" is answered by tagging the specific block
+    // via a persisted pointer, not by reading the ambient dischargeMode flag. dischargeMode can
+    // outlive the discharge screens themselves (back button / away navigation before a block is
+    // even started), so keying off blockId means a later, unrelated normal block is never
+    // misclassified as discharge (which would have silently skipped its energy light/prediction
+    // resolution and skipped retro).
+    const wasDischarge = dischargeBlockPointer.get() === block.id
+    if (wasDischarge) {
+      dischargeBlockPointer.clear()
+    }
 
     if (completed) {
-      await complete()
+      await actions.complete()
     } else {
-      await markIncomplete()
+      await actions.markIncomplete()
     }
-    // complete()/markIncomplete() clear activeBlock instead of returning the updated row, so the
-    // retro screen's context is rebuilt here to match what they just persisted (SPEC §6 D-09 —
-    // energy lights regardless of completed/incomplete).
-    setLastResolvedBlock({
-      ...block,
-      status: completed ? 'done' : 'incomplete',
-      endedAt: nowIso(),
-    })
 
-    const hasPrediction = useAppStore
-      .getState()
-      .predictions.some((prediction) => prediction.blockId === block.id)
-    if (hasPrediction) {
-      await resolvePrediction(block.id, completed)
+    if (wasDischarge) {
+      finishDischargePath(actions)
+      onFinished(true)
+      return
     }
-    await lightEnergyCell(block.id, todayDateString())
-    onFinished()
+
+    await finishNormalPath(block, completed, actions)
+    onFinished(false)
   }
 
   useEffect(() => {
