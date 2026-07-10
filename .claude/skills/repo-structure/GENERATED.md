@@ -1,0 +1,186 @@
+<!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
+<!-- 마지막 생성: 2026-07-10T13:52:20.609Z -->
+
+## src/
+```
+index.css
+main.tsx
+app/
+  AppShell.tsx
+  core-loop.integration.test.tsx
+  router.test.tsx
+  router.tsx
+components/
+  BottomSheet/
+    BottomSheet.module.css
+    BottomSheet.test.tsx
+    BottomSheet.tsx
+    index.ts
+  Button/
+    Button.module.css
+    Button.test.tsx
+    Button.tsx
+    index.ts
+  Chip/
+    Chip.module.css
+    Chip.test.tsx
+    Chip.tsx
+    index.ts
+  EnergyBar/
+    EnergyBar.module.css
+    EnergyBar.test.tsx
+    EnergyBar.tsx
+    index.ts
+  EnergyCell/
+    EnergyCell.module.css
+    EnergyCell.test.tsx
+    EnergyCell.tsx
+    index.ts
+  OptionRow/
+    index.ts
+    OptionRow.module.css
+    OptionRow.test.tsx
+    OptionRow.tsx
+  TaskCard/
+    index.ts
+    TaskCard.module.css
+    TaskCard.test.tsx
+    TaskCard.tsx
+hooks/
+  useFocusTimer.ts
+  useLongPress.test.ts
+  useLongPress.ts
+  useSessionRecovery.test.tsx
+  useSessionRecovery.ts
+lib/
+  active-session-pointer.ts
+  contrast.test.ts
+  contrast.ts
+  core-loop-selectors.test.ts
+  core-loop-selectors.ts
+  discharge-block-pointer.test.ts
+  discharge-block-pointer.ts
+  id.test.ts
+  id.ts
+  north-star-selectors.test.ts
+  north-star-selectors.ts
+  north-star-storage.test.ts
+  north-star-storage.ts
+  notification-pref.test.ts
+  notification-pref.ts
+  onboarding-status.test.ts
+  onboarding-status.ts
+  session-timer.test.ts
+  session-timer.ts
+  time.test.ts
+  time.ts
+  verb-chips.test.ts
+  verb-chips.ts
+pages/
+  DashboardPage.module.css
+  DashboardPage.test.tsx
+  DashboardPage.tsx
+  DischargeDashboardPage.module.css
+  DischargeDashboardPage.test.tsx
+  DischargeDashboardPage.tsx
+  DischargeEntryPage.module.css
+  DischargeEntryPage.test.tsx
+  DischargeEntryPage.tsx
+  FocusPage.module.css
+  FocusPage.test.tsx
+  FocusPage.tsx
+  NorthStarPage.module.css
+  NorthStarPage.test.tsx
+  NorthStarPage.tsx
+  NotFoundPage.tsx
+  OnboardingPage.module.css
+  OnboardingPage.test.tsx
+  OnboardingPage.tsx
+  PredictPage.module.css
+  PredictPage.test.tsx
+  PredictPage.tsx
+  RetroPage.module.css
+  RetroPage.test.tsx
+  RetroPage.tsx
+  SettingsPage.module.css
+  SettingsPage.test.tsx
+  SettingsPage.tsx
+  SplitPage.module.css
+  SplitPage.test.tsx
+  SplitPage.tsx
+routes/
+  paths.ts
+storage/
+  idb-schema.ts
+  idb-storage.test.ts
+  idb-storage.ts
+  persist.test.ts
+  persist.ts
+  types.ts
+store/
+  index.test.ts
+  index.ts
+  slices/
+    block-queue-slice.test.ts
+    block-queue-slice.ts
+    discharge-slice.test.ts
+    discharge-slice.ts
+    energy-slice.test.ts
+    energy-slice.ts
+    prediction-slice.test.ts
+    prediction-slice.ts
+    retro-context-slice.test.ts
+    retro-context-slice.ts
+    session-slice.test.ts
+    session-slice.ts
+    task-slice.test.ts
+    task-slice.ts
+    timer-slice.test.ts
+    timer-slice.ts
+styles/
+  tokens.generated.css
+  tokens.generated.test.ts
+test/
+  axe.ts
+  setup.ts
+types/
+  block.ts
+  energy-cell.ts
+  north-star.ts
+  prediction.ts
+  session.ts
+  task.ts
+```
+
+## docs/
+```
+DECISIONS.md
+DESIGN-BRIEF.md
+DESIGN-TOKENS.md
+README.md
+SCREEN-FLOW.md
+SPEC.md
+TECH-SPEC.md
+VISION.md
+_archive/
+  요구사항 합의서 (Grill Summary) v1.0.md
+  제품 기획-결정 문서 v1.3.md
+  화면 흐름 명세서.md
+phases/
+  _TEMPLATE.md
+  PH-00-tooling.md
+  PH-01-storage.md
+  PH-02-state.md
+  PH-03-shell.md
+  PH-04-tokens-ui.md
+  PH-05-core-loop.md
+  PH-05.1-core-loop-remediation.md
+  PH-06-edge-cases.md
+  PH-06.1-carryover-requeue.md
+  PH-07-onboarding.md
+  PH-08-discharge.md
+  PH-09-settings-northstar.md
+  PH-10-telemetry.md
+  PH-11-pwa-deploy.md
+  README.md
+```
