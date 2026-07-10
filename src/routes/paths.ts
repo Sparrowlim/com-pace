@@ -8,4 +8,5 @@ export const ROUTES = {
   dischargeEntry: '/discharge',
   dischargeDashboard: '/discharge/dashboard',
   settings: '/settings',
+  northStar: '/north-star',
 } as const

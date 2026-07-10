@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { Button } from '../components/Button'
 import { EnergyBar } from '../components/EnergyBar'
@@ -14,6 +14,9 @@ import type { QueuedBlock } from '../store/slices/block-queue-slice'
 import type { Task } from '../types/task'
 import { todayDateString } from '../lib/time'
 import { isOnboardingComplete } from '../lib/onboarding-status'
+import { getNorthStar } from '../lib/north-star-storage'
+import { formatNorthStarSummary, hasNorthStar } from '../lib/north-star-selectors'
+import type { NorthStar } from '../types/north-star'
 import { ROUTES } from '../routes/paths'
 import styles from './DashboardPage.module.css'
 
@@ -33,6 +36,20 @@ type AddTaskPromptProps = {
   draftTitle: string
   onDraftChange: (value: string) => void
   onSubmit: () => void
+}
+
+// RetroPage의 makeThoughtActions와 동일한 팩토리 패턴 — 컴포넌트 밖으로 빼 본체를 얇게 유지한다.
+function createAddTaskHandler(
+  draftTitle: string,
+  addTask: (title: string) => Promise<Task>,
+  navigate: NavigateFunction,
+): () => Promise<void> {
+  return async () => {
+    const trimmed = draftTitle.trim()
+    if (!trimmed) return
+    await addTask(trimmed)
+    navigate(ROUTES.split)
+  }
 }
 
 function AddTaskPrompt({ draftTitle, onDraftChange, onSubmit }: AddTaskPromptProps) {
@@ -115,6 +132,36 @@ function DischargeLink({ onEnter }: { onEnter: () => void }) {
 // 동안만 보이고, 언마운트 시 정리된다(RetroPage의 capturedThought와 동일 패턴).
 function DischargeEndBanner({ message }: { message: string }) {
   return <p className={styles.dischargeEndBanner}>{message}</p>
+}
+
+// PH-09 §9 — 정적 텍스트만, 탭 핸들러 없음(진행 측정기 아님). 수정은 오직 설정 화면 경유로만.
+function NorthStarBadge({ northStar }: { northStar: NorthStar }) {
+  return <p className={styles.northStarBadge}>{formatNorthStarSummary(northStar)}</p>
+}
+
+// PH-09 — 북극성 배지/초대 링크 + 설정 진입점. 설정 링크는 방전 링크와 달리 활성 블록 여부와
+// 무관하게 항상 노출한다(설계 결정 4).
+function DashboardHeader({
+  northStar,
+  navigate,
+}: {
+  northStar: NorthStar
+  navigate: NavigateFunction
+}) {
+  return (
+    <div className={styles.header}>
+      {hasNorthStar(northStar) ? (
+        <NorthStarBadge northStar={northStar} />
+      ) : (
+        <Button variant="secondary" onClick={() => navigate(ROUTES.northStar)}>
+          북극성 더하기(선택)
+        </Button>
+      )}
+      <Button variant="secondary" onClick={() => navigate(ROUTES.settings)}>
+        설정
+      </Button>
+    </div>
+  )
 }
 
 type ActiveTaskSectionProps = {
@@ -214,12 +261,7 @@ export default function DashboardPage() {
     return <Navigate to={ROUTES.onboarding} replace />
   }
 
-  const handleAddTask = async () => {
-    const trimmed = draftTitle.trim()
-    if (!trimmed) return
-    await addTask(trimmed)
-    navigate(ROUTES.split)
-  }
+  const handleAddTask = createAddTaskHandler(draftTitle, addTask, navigate)
 
   const task = selectActiveTask(tasks, queuedBlocks)
   const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
@@ -232,6 +274,7 @@ export default function DashboardPage() {
   return (
     <div className={styles.page}>
       {dischargeEndMessage && <DischargeEndBanner message={dischargeEndMessage} />}
+      <DashboardHeader northStar={getNorthStar()} navigate={navigate} />
       <ActiveTaskSection
         hasActiveBlock={!!activeBlock}
         task={task}

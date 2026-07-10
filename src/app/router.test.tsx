@@ -21,15 +21,31 @@ beforeEach(() => {
   })
 })
 
-describe('router — still-placeholder pages (out of PH-05 scope)', () => {
-  it.each([
-    [ROUTES.settings, '설정'],
-    ['/no-such-route', '페이지를 찾을 수 없어요'],
-  ])('renders the placeholder page for %s', async (path, expectedText) => {
-    const router = createMemoryRouter(routeObjects, { initialEntries: [path] })
+describe('router — still-placeholder pages', () => {
+  it.each([['/no-such-route', '페이지를 찾을 수 없어요']])(
+    'renders the placeholder page for %s',
+    async (path, expectedText) => {
+      const router = createMemoryRouter(routeObjects, { initialEntries: [path] })
+      render(<RouterProvider router={router} />)
+
+      expect(await screen.findByText(expectedText)).toBeInTheDocument()
+    },
+  )
+})
+
+describe('router — settings & north star (PH-09)', () => {
+  it('renders the real settings screen at /settings, not a placeholder', async () => {
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.settings] })
     render(<RouterProvider router={router} />)
 
-    expect(await screen.findByText(expectedText)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '양가 목표' })).toBeInTheDocument()
+  })
+
+  it('renders the north star edit screen at /north-star', async () => {
+    const router = createMemoryRouter(routeObjects, { initialEntries: [ROUTES.northStar] })
+    render(<RouterProvider router={router} />)
+
+    expect(await screen.findByRole('button', { name: '남길게요' })).toBeInTheDocument()
   })
 })
 

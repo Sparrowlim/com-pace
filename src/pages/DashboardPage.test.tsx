@@ -7,6 +7,7 @@ import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
 import { markOnboardingComplete } from '../lib/onboarding-status'
+import { saveNorthStar } from '../lib/north-star-storage'
 
 function renderDashboard() {
   const router = createMemoryRouter(
@@ -17,6 +18,8 @@ function renderDashboard() {
       { path: ROUTES.predict, element: <div>PREDICT_STUB</div> },
       { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
       { path: ROUTES.dischargeEntry, element: <div>DISCHARGE_ENTRY_STUB</div> },
+      { path: ROUTES.settings, element: <div>SETTINGS_STUB</div> },
+      { path: ROUTES.northStar, element: <div>NORTH_STAR_STUB</div> },
     ],
     { initialEntries: [ROUTES.dashboard] },
   )
@@ -216,6 +219,75 @@ describe('DashboardPage — discharge link (PH-08 §5)', () => {
     await user.click(await screen.findByRole('button', { name: '오늘은 가볍게 갈까요' }))
 
     expect(await screen.findByText('DISCHARGE_ENTRY_STUB')).toBeInTheDocument()
+  })
+})
+
+describe('DashboardPage — north star (PH-09 §9)', () => {
+  test('shows the invite link and zero badge DOM when no north star is saved', async () => {
+    renderDashboard()
+    await screen.findByRole('textbox')
+
+    expect(screen.getByRole('button', { name: '북극성 더하기(선택)' })).toBeInTheDocument()
+    expect(screen.queryByText(/열망:|의무:/)).not.toBeInTheDocument()
+  })
+
+  test('navigates to the north star page when the invite link is clicked', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+    await screen.findByRole('textbox')
+
+    await user.click(screen.getByRole('button', { name: '북극성 더하기(선택)' }))
+
+    expect(await screen.findByText('NORTH_STAR_STUB')).toBeInTheDocument()
+  })
+
+  test.each([
+    ['aspiration only', '작가가 되고 싶어요', ''],
+    ['obligation only', '', '보고서 마감'],
+    ['both', '작가가 되고 싶어요', '보고서 마감'],
+  ])(
+    'shows a static badge and no invite link when %s is set',
+    async (_label, aspiration, obligation) => {
+      saveNorthStar({ aspiration, obligation })
+      renderDashboard()
+      await screen.findByRole('textbox')
+
+      expect(screen.queryByRole('button', { name: '북극성 더하기(선택)' })).not.toBeInTheDocument()
+      expect(screen.getByText(/열망:|의무:/)).toBeInTheDocument()
+    },
+  )
+
+  test('renders no progress or percentage markup on the badge (SPEC §9 — 진행 측정기 아님)', async () => {
+    saveNorthStar({ aspiration: '작가가 되고 싶어요', obligation: '보고서 마감' })
+    renderDashboard()
+    const badge = await screen.findByText(/열망:|의무:/)
+
+    expect(badge.textContent ?? '').not.toMatch(/%/)
+    expect(badge.textContent ?? '').not.toMatch(/퍼센트|도달률|진행률/)
+    expect(document.querySelector('progress, [role="progressbar"]')).not.toBeInTheDocument()
+  })
+})
+
+describe('DashboardPage — settings entry point (PH-09)', () => {
+  test('always exposes a settings link and navigates to settings', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+    await screen.findByRole('textbox')
+
+    await user.click(screen.getByRole('button', { name: '설정' }))
+
+    expect(await screen.findByText('SETTINGS_STUB')).toBeInTheDocument()
+  })
+
+  test('is visible even while a timer is in progress', async () => {
+    const task = await useAppStore.getState().addTask('청소')
+    useAppStore.getState().queueBlocks(task.id, ['책상 정리하기'])
+    await useAppStore.getState().markTaskSplitDone(task.id)
+    await useAppStore.getState().startBlock(task.id, '책상 정리하기')
+    renderDashboard()
+    await screen.findByText('타이머가 진행 중이에요')
+
+    expect(screen.getByRole('button', { name: '설정' })).toBeInTheDocument()
   })
 })
 

@@ -5,6 +5,20 @@
   padding: var(--space-6);
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* PH-09 §9 — 순수 정적 텍스트, 진행 측정 마크업 없음. */
+.northStarBadge {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
 .prompt {
   margin: 0;
   font-family: var(--font-family-serif);

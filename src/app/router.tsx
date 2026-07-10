@@ -12,6 +12,7 @@ const RetroPage = lazy(() => import('../pages/RetroPage'))
 const DischargeEntryPage = lazy(() => import('../pages/DischargeEntryPage'))
 const DischargeDashboardPage = lazy(() => import('../pages/DischargeDashboardPage'))
 const SettingsPage = lazy(() => import('../pages/SettingsPage'))
+const NorthStarPage = lazy(() => import('../pages/NorthStarPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
 export const routeObjects: RouteObject[] = [
@@ -27,6 +28,7 @@ export const routeObjects: RouteObject[] = [
       { path: ROUTES.dischargeEntry, element: <DischargeEntryPage /> },
       { path: ROUTES.dischargeDashboard, element: <DischargeDashboardPage /> },
       { path: ROUTES.settings, element: <SettingsPage /> },
+      { path: ROUTES.northStar, element: <NorthStarPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
