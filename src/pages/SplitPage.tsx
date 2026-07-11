@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { Chip } from '../components/Chip'
 import { Button } from '../components/Button'
+import { TextInput } from '../components/TextInput'
 import { useAppStore } from '../store'
 import { selectActiveTask } from '../lib/core-loop-selectors'
 import { VERB_CHIPS } from '../lib/verb-chips'
@@ -18,13 +19,9 @@ type FragmentEntryProps = {
 function FragmentEntry({ fragment, onFragmentChange, onPickVerb }: FragmentEntryProps) {
   return (
     <>
-      <input
-        className={styles.input}
-        type="text"
-        value={fragment}
-        onChange={(e) => onFragmentChange(e.target.value)}
-        placeholder="예: 책상, 이메일"
-      />
+      <div className={styles.fragmentInput}>
+        <TextInput value={fragment} onChange={onFragmentChange} label="과제 조각" hideLabel />
+      </div>
       <div className={styles.chips}>
         {VERB_CHIPS.map((verb) => (
           <Chip key={verb} variant="default" onClick={() => onPickVerb(verb)}>

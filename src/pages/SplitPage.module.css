@@ -5,17 +5,8 @@
   padding: var(--space-6);
 }
 
-.input {
-  width: 100%;
-  min-height: 44px;
-  padding: var(--space-3) var(--space-4);
+.fragmentInput {
   margin-bottom: var(--space-5);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background-color: var(--surface-raised);
-  color: var(--text-primary);
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-md);
 }
 
 .chips {

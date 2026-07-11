@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { BottomSheet } from '../components/BottomSheet'
+import { TextInput } from '../components/TextInput'
+import { TimerDisplay } from '../components/TimerDisplay'
 import { useFocusTimer, formatRemaining } from '../hooks/useFocusTimer'
 import { useLongPress } from '../hooks/useLongPress'
 import { useAppStore } from '../store'
@@ -46,15 +48,15 @@ type CaptureModalProps = {
 function CaptureModal({ isOpen, draft, onDraftChange, onDone }: CaptureModalProps) {
   return (
     <BottomSheet isOpen={isOpen} label="딴생각 포착" onClose={onDone}>
-      <label className={styles.captureLabel} htmlFor="capture-input">
-        잠깐 스친 생각, 적어두고 다시 집중하세요
-      </label>
-      <textarea
-        id="capture-input"
-        className={styles.captureInput}
-        value={draft}
-        onChange={(event) => onDraftChange(event.target.value)}
-      />
+      <div className={styles.captureField}>
+        <TextInput
+          id="capture-input"
+          multiline
+          value={draft}
+          onChange={onDraftChange}
+          label="잠깐 스친 생각, 적어두고 다시 집중하세요"
+        />
+      </div>
       <Button variant="primary" onClick={onDone}>
         나중에 보기
       </Button>
@@ -110,8 +112,11 @@ export default function FocusPage() {
     <div className={styles.page} data-mode={isDischargeBlock ? 'discharge' : 'focus'}>
       <DevSkipButton onSkip={() => finish(true)} />
       <div className={styles.tapArea} {...(isPaused || isCaptureOpen ? {} : longPressHandlers)}>
-        <p className={styles.label}>{activeBlock.verbLabel}</p>
-        <p className={styles.timer}>{formatRemaining(elapsedSeconds)}</p>
+        <TimerDisplay
+          label={activeBlock.verbLabel}
+          remainingLabel={formatRemaining(elapsedSeconds)}
+          variant={isPaused ? 'paused' : isDischargeBlock ? 'discharge' : 'running'}
+        />
       </div>
       {isPaused && <PauseOverlay onResume={() => void resume()} onQuit={() => finish(false)} />}
       <CaptureModal

@@ -33,20 +33,6 @@
   font-size: var(--font-size-sm);
 }
 
-/* SCREEN-FLOW §3-2 — 적중일 때만 렌더, 빗나감은 이 카드 자체가 없다(배지·박스 없음) */
-.bonusCard {
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
-  background-color: var(--bonus-bg);
-  border: 1px solid var(--bonus-line);
-}
-
-.bonusText {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-}
-
 .actions {
   display: flex;
   flex-direction: column;

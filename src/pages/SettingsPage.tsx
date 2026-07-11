@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { OptionRow } from '../components/OptionRow'
+import { NorthStarBadge } from '../components/NorthStarBadge'
 import { getNorthStar } from '../lib/north-star-storage'
-import { formatNorthStarSummary, hasNorthStar } from '../lib/north-star-selectors'
+import { hasNorthStar } from '../lib/north-star-selectors'
 import { isNotificationOptIn, setNotificationOptIn } from '../lib/notification-pref'
 import type { NorthStar } from '../types/north-star'
 import { ROUTES } from '../routes/paths'
@@ -13,7 +14,7 @@ function NorthStarSummary({ northStar }: { northStar: NorthStar }) {
   if (!hasNorthStar(northStar)) {
     return <p className={styles.summary}>아직 없어요 — 원할 때 하나 남겨봐도 좋아요</p>
   }
-  return <p className={styles.summary}>{formatNorthStarSummary(northStar)}</p>
+  return <NorthStarBadge northStar={northStar} />
 }
 
 export default function SettingsPage() {

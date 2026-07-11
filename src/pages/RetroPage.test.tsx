@@ -45,6 +45,24 @@ beforeEach(() => {
   })
 })
 
+describe('RetroPage — StateChip copy (PH-04.4 1-3)', () => {
+  test('shows "완료" for a completed block', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    expect(await screen.findByText('완료')).toBeInTheDocument()
+    expect(screen.queryByText('이어감')).not.toBeInTheDocument()
+  })
+
+  test('shows "이어감" for an incomplete block, never "실패"/"미완료"', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'incomplete' }) })
+    renderRetroPage()
+
+    expect(await screen.findByText('이어감')).toBeInTheDocument()
+    expect(screen.queryByText('완료')).not.toBeInTheDocument()
+  })
+})
+
 describe('RetroPage — no resolved block', () => {
   test('redirects to the dashboard', async () => {
     renderRetroPage()

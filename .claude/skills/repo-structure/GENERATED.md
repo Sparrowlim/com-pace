@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-11T06:24:45.795Z -->
+<!-- 마지막 생성: 2026-07-11T07:25:06.608Z -->
 
 ## src/
 ```
@@ -11,6 +11,11 @@ app/
   router.test.tsx
   router.tsx
 components/
+  BonusCard/
+    BonusCard.module.css
+    BonusCard.test.tsx
+    BonusCard.tsx
+    index.ts
   BottomSheet/
     BottomSheet.module.css
     BottomSheet.test.tsx
@@ -36,6 +41,11 @@ components/
     EnergyCell.test.tsx
     EnergyCell.tsx
     index.ts
+  NorthStarBadge/
+    index.ts
+    NorthStarBadge.module.css
+    NorthStarBadge.test.tsx
+    NorthStarBadge.tsx
   OptionRow/
     index.ts
     OptionRow.module.css
@@ -46,6 +56,16 @@ components/
     TaskCard.module.css
     TaskCard.test.tsx
     TaskCard.tsx
+  TextInput/
+    index.ts
+    TextInput.module.css
+    TextInput.test.tsx
+    TextInput.tsx
+  TimerDisplay/
+    index.ts
+    TimerDisplay.module.css
+    TimerDisplay.test.tsx
+    TimerDisplay.tsx
 hooks/
   useFocusTimer.ts
   useLongPress.test.ts

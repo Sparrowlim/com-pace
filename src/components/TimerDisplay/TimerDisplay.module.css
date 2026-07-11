@@ -1,0 +1,25 @@
+.display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-7);
+}
+
+/* 기존 FocusPage.module.css .label/.timer 값 그대로 이전(DO NOT CHANGE — 값 재정의 금지) */
+.label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.value {
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-timer);
+  color: var(--text-timer, var(--text-primary));
+}
+
+/* paused는 크기·서체 동일, 색만 한 단계 물러난다(dark.bgDeep 취지 — 방전과 달리 문구는 안 바뀜) */
+.display[data-variant='paused'] .value {
+  color: var(--text-secondary);
+}

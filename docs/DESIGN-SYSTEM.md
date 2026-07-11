@@ -118,13 +118,13 @@
 
 ### 신규 5종 (PH-04.4)
 
-| 컴포넌트         | 위치                                                      | 핵심 규약                                                                                                                                                                        | 가드레일 근거                                                              |
-| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `TextInput`      | `src/components/TextInput`                                | `surface.raised`+`border.default` 무테두리에 가까운 단일 상태. 포커스는 `border`→`action.ink`(텍스트색 전환, 배경 불변). `required`/`error`/`maxLength` props 자체가 타입에 없음 | CLAUDE §2 결정 피로 차단 · §4 톤 · DESIGN-TOKENS §5-2 처벌색 없음          |
-| `TimerDisplay`   | `src/components/TimerDisplay`                             | 진행률(링·퍼센트·잔여 블록) 완전 배제 — 분 단위 큰 숫자 + 동사 라벨만. `running`/`paused`(`dark.bgDeep`)/`discharge`(문구만 다름, 크기·서체 동일) 3 variant                      | CLAUDE §1 정체성 경계 · §2 결정 피로 차단 · §6 체크리스트 6번(볼거리 금지) |
-| `StateChip`      | `src/pages/RetroPage/` 로컬(비공개 — `src/components` 밖) | 회고 페이지 배럴 밖에서 import 불가(파일 위치로 물리적 제한). 카피는 "완료"/"이어감"만(실패·미완료 단어 UI 노출 금지)                                                            | DESIGN-TOKENS §3 결정#6 경계 조건 · CLAUDE §2·§4                           |
-| `BonusCard`      | `src/components/BonusCard`                                | `hit=false` → `null` 반환(조건부 렌더가 시그니처 자체에 강제됨, 빈 카드·placeholder 없음)                                                                                        | SCREEN-FLOW §3-2 · DESIGN-TOKENS §5-4                                      |
-| `NorthStarBadge` | `src/components/NorthStarBadge`                           | 순수 정적 텍스트. `onClick` prop이 타입에 존재하지 않음(탭 핸들러 자체가 불가능)                                                                                                 | SPEC §9 "진행 측정기 아님" · CLAUDE §1·§5                                  |
+| 컴포넌트         | 위치                                                                       | 핵심 규약                                                                                                                                                                        | 가드레일 근거                                                              |
+| ---------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `TextInput`      | `src/components/TextInput`                                                 | `surface.raised`+`border.default` 무테두리에 가까운 단일 상태. 포커스는 `border`→`action.ink`(텍스트색 전환, 배경 불변). `required`/`error`/`maxLength` props 자체가 타입에 없음 | CLAUDE §2 결정 피로 차단 · §4 톤 · DESIGN-TOKENS §5-2 처벌색 없음          |
+| `TimerDisplay`   | `src/components/TimerDisplay`                                              | 진행률(링·퍼센트·잔여 블록) 완전 배제 — 분 단위 큰 숫자 + 동사 라벨만. `running`/`paused`(`dark.bgDeep`)/`discharge`(문구만 다름, 크기·서체 동일) 3 variant                      | CLAUDE §1 정체성 경계 · §2 결정 피로 차단 · §6 체크리스트 6번(볼거리 금지) |
+| `StateChip`      | `src/pages/RetroPage.tsx` 로컬(비공개 — `src/components` 밖, export 안 함) | `RetroPage.tsx` 밖에서 import 불가(파일 위치 + ESLint `no-restricted-imports` 이중 격리). 카피는 "완료"/"이어감"만(실패·미완료 단어 UI 노출 금지)                                | DESIGN-TOKENS §3 결정#6 경계 조건 · CLAUDE §2·§4                           |
+| `BonusCard`      | `src/components/BonusCard`                                                 | `hit=false` → `null` 반환(조건부 렌더가 시그니처 자체에 강제됨, 빈 카드·placeholder 없음)                                                                                        | SCREEN-FLOW §3-2 · DESIGN-TOKENS §5-4                                      |
+| `NorthStarBadge` | `src/components/NorthStarBadge`                                            | 순수 정적 텍스트. `onClick` prop이 타입에 존재하지 않음(탭 핸들러 자체가 불가능)                                                                                                 | SPEC §9 "진행 측정기 아님" · CLAUDE §1·§5                                  |
 
 ---
 
@@ -153,6 +153,7 @@
 
 ## Changelog
 
+- **v0.4(PH-04.4 Phase 4, 2026-07-11)** — 구현(TDD) 완료: 신규 5종(`TextInput`/`TimerDisplay`/`BonusCard`/`NorthStarBadge` — `src/components`, `StateChip` — `src/pages/RetroPage.tsx` 로컬)을 코드로 채우고 `DashboardPage`/`NorthStarPage`/`SplitPage`/`FocusPage`/`RetroPage`/`SettingsPage`의 ad-hoc `<input>`/`<textarea>`/로컬 재발명을 전부 교체(`grep -rn "<input\|<textarea" src/pages/*.tsx` 0건 확인). `StateChip` 스코프는 파일 위치 + `eslint.config.js`의 `no-restricted-imports` 이중 격리로 확정(폴더 전환은 범위 밖 — §5 표 위치 문자열을 실제 flat 파일 경로로 보정). 기존 vitest 스위트 전부 그린 유지.
 - **v0.3(PH-04.4, 2026-07-11)** — §5 컴포넌트 카탈로그(기존 6종 + 신규 5종 `TextInput`/`TimerDisplay`/`StateChip`/`BonusCard`/`NorthStarBadge`) 신설, §6 조립 레시피(SCREEN-FLOW §1 화면별 프리미티브 조합 표) 신설. `PH-04.4-component-catalog.md` Phase 1 워크시트 소스 코드 대조 검증 완료(감사 누락 1건 보정 — `SplitPage`의 `TextInput` 재발명 4번째 위치 반영). 토큰 값 자체는 무변경.
 - **v0.2(PH-04.3, 2026-07-11)** — `Button`/`Chip` 여백 계층 관찰, `Button.primary`/`Chip.selected`/`OptionRow` elevation 매핑 누락 관찰을 소급 수정으로 해소(§1·§3 관찰 문단을 "✔ 해소"로 갱신). 이 문서 자체의 규약(계층 정의·매핑표)은 무변경.
 - **v0.1** — 최초 작성(PH-04.2). `DESIGN-TOKENS.md §10-6` 항목 6("컴포넌트 토큰(다음 단계)")을 채움. 여백 리듬(3계층)·타이포 위계(≤3단계)·elevation 서열(6종 매핑)·모션 일관성 표 신설. `TaskCard` 파일럿 대조 결과 4개 절 전부 편차 없음(배치 변경 불필요) — `Button`/`Chip`/`OptionRow`의 기존 미스매치는 관찰로 기록하고 `PH-04.3` 소급 감사로 이관.

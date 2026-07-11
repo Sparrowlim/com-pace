@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { TextInput } from '../components/TextInput'
 import { getNorthStar, saveNorthStar } from '../lib/north-star-storage'
 import { ROUTES } from '../routes/paths'
 import styles from './NorthStarPage.module.css'
@@ -28,24 +29,8 @@ export default function NorthStarPage() {
         원한다면 방향을 하나 남겨봐도 좋아요. 둘 다 몰라도, 하나만 있어도 괜찮아요.
       </p>
       <div className={styles.fields}>
-        <label className={styles.field}>
-          <span className={styles.label}>열망 — 원하는 방향</span>
-          <input
-            className={styles.input}
-            type="text"
-            value={aspiration}
-            onChange={(e) => setAspiration(e.target.value)}
-          />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.label}>의무 — 해내야 하는 방향</span>
-          <input
-            className={styles.input}
-            type="text"
-            value={obligation}
-            onChange={(e) => setObligation(e.target.value)}
-          />
-        </label>
+        <TextInput value={aspiration} onChange={setAspiration} label="열망 — 원하는 방향" />
+        <TextInput value={obligation} onChange={setObligation} label="의무 — 해내야 하는 방향" />
       </div>
       <div className={styles.actions}>
         <Button variant="primary" onClick={handleSave}>

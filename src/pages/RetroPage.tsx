@@ -3,13 +3,16 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { EnergyBar } from '../components/EnergyBar'
 import { Button } from '../components/Button'
 import { OptionRow } from '../components/OptionRow'
+import { BonusCard } from '../components/BonusCard'
 import { useAppStore } from '../store'
 import { selectActiveTask, selectNextQueuedBlock } from '../lib/core-loop-selectors'
 import type { TimeSenseFeedback } from '../store/slices/retro-context-slice'
 import { ROUTES } from '../routes/paths'
 import styles from './RetroPage.module.css'
 
-function RecognitionChip({ completed }: { completed: boolean }) {
+// PH-04.4 1-3 — 회고 화면 로컬 전용, export하지 않는다(카탈로그·다른 화면으로 새면 성적표가
+// 된다). 파일 위치+ESLint no-restricted-imports 이중 격리(DESIGN-TOKENS §5-5).
+function StateChip({ completed }: { completed: boolean }) {
   return (
     <span className={completed ? styles.doneChip : styles.carryChip}>
       {completed ? '완료' : '이어감'}
@@ -43,16 +46,6 @@ function TimeSenseCalibration({
         selected={value === 'slow'}
         onSelect={() => onSelect('slow')}
       />
-    </div>
-  )
-}
-
-// SCREEN-FLOW §3-2 — 적중일 때만 렌더, 빗나감은 이 카드 자체가 없다(배지·박스 없음).
-function BonusCard({ hit }: { hit: boolean }) {
-  if (!hit) return null
-  return (
-    <div className={styles.bonusCard}>
-      <p className={styles.bonusText}>예측이 딱 맞았어요.</p>
     </div>
   )
 }
@@ -219,7 +212,7 @@ export default function RetroPage() {
       <p className={styles.headline}>
         {completed ? '15분, 오늘도 해냈어요.' : '오늘은 여기까지, 15분만큼의 증거는 남았어요.'}
       </p>
-      <RecognitionChip completed={completed} />
+      <StateChip completed={completed} />
       <TimeSenseCalibration value={timeSenseFeedback} onSelect={setTimeSenseFeedback} />
       <BonusCard hit={hit} />
       {capturedThought && <CapturedThoughtCard text={capturedThought} {...thoughtActions} />}

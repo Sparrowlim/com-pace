@@ -1,0 +1,49 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
+/* code review 발견 — 시각적으로는 숨기되 스크린리더 접근 가능한 이름은 유지(axe critical 보정) */
+.labelHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* PH-04.4 1-1 — surface.raised+border.default 무테두리 근접, 단일 상태 */
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  transition: border-color var(--duration-fast) var(--easing-quiet);
+}
+
+textarea.input {
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* 포커스는 배경 불변, border만 action-ink로 전환(CTA 색이 아니라 텍스트색) */
+.input:focus-visible {
+  outline: none;
+  border-color: var(--action-ink);
+}

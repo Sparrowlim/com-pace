@@ -27,19 +27,6 @@
   cursor: pointer;
 }
 
-.label {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-lg);
-}
-
-.timer {
-  margin: 0;
-  font-family: var(--font-family-serif);
-  font-size: var(--font-size-timer);
-  color: var(--text-timer, var(--text-primary));
-}
-
 .tapArea {
   display: flex;
   flex-direction: column;
@@ -64,21 +51,6 @@
   gap: var(--space-4);
 }
 
-.captureLabel {
-  display: block;
-  margin-bottom: var(--space-4);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.captureInput {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 80px;
+.captureField {
   margin-bottom: var(--space-5);
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  font-family: inherit;
-  font-size: var(--font-size-base);
 }

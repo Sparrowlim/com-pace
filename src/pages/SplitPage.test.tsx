@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import SplitPage from './SplitPage'
 import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
+import { runAxe } from '../test/axe'
 
 function renderSplitPage() {
   const router = createMemoryRouter(
@@ -15,7 +16,7 @@ function renderSplitPage() {
     ],
     { initialEntries: [ROUTES.split] },
   )
-  render(<RouterProvider router={router} />)
+  return render(<RouterProvider router={router} />)
 }
 
 beforeEach(() => {
@@ -41,7 +42,7 @@ describe('SplitPage', () => {
     await useAppStore.getState().addTask('청소')
     renderSplitPage()
 
-    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.type(await screen.findByRole('textbox', { name: '과제 조각' }), '책상')
     await user.click(screen.getByRole('button', { name: '정리하기' }))
 
     expect(await screen.findByText('책상 정리하기')).toBeInTheDocument()
@@ -52,7 +53,7 @@ describe('SplitPage', () => {
     await useAppStore.getState().addTask('청소')
     renderSplitPage()
 
-    const input = await screen.findByRole('textbox')
+    const input = await screen.findByRole('textbox', { name: '과제 조각' })
     await user.type(input, '책상')
     await user.click(screen.getByRole('button', { name: '정리하기' }))
 
@@ -64,7 +65,7 @@ describe('SplitPage', () => {
     await useAppStore.getState().addTask('청소')
     renderSplitPage()
 
-    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.type(await screen.findByRole('textbox', { name: '과제 조각' }), '책상')
     await user.click(screen.getByRole('button', { name: '정리하기' }))
     await user.click(await screen.findByRole('button', { name: '책상 정리하기 삭제' }))
 
@@ -83,7 +84,7 @@ describe('SplitPage', () => {
     const task = await useAppStore.getState().addTask('청소')
     renderSplitPage()
 
-    await user.type(await screen.findByRole('textbox'), '책상')
+    await user.type(await screen.findByRole('textbox', { name: '과제 조각' }), '책상')
     await user.click(screen.getByRole('button', { name: '정리하기' }))
     await user.click(screen.getByRole('button', { name: '완료' }))
 
@@ -93,6 +94,14 @@ describe('SplitPage', () => {
       { id: expect.any(String), taskId: task.id, verbLabel: '책상 정리하기' },
     ])
     expect(tasks.find((t) => t.id === task.id)?.splitDone).toBe(true)
+  })
+
+  test('has no axe violations (code review — the fragment TextInput lost its accessible name when the visible placeholder was removed; regression-locked here)', async () => {
+    await useAppStore.getState().addTask('청소')
+    const { container } = renderSplitPage()
+    await screen.findByText('청소')
+
+    expect((await runAxe(container)).violations).toHaveLength(0)
   })
 
   test('renders one main task card (One Task invariant)', async () => {

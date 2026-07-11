@@ -4,6 +4,8 @@ import { TaskCard } from '../components/TaskCard'
 import { Button } from '../components/Button'
 import { EnergyBar } from '../components/EnergyBar'
 import { OptionRow } from '../components/OptionRow'
+import { TextInput } from '../components/TextInput'
+import { NorthStarBadge } from '../components/NorthStarBadge'
 import { useAppStore } from '../store'
 import {
   selectActiveTask,
@@ -15,7 +17,7 @@ import type { Task } from '../types/task'
 import { todayDateString } from '../lib/time'
 import { isOnboardingComplete } from '../lib/onboarding-status'
 import { getNorthStar } from '../lib/north-star-storage'
-import { formatNorthStarSummary, hasNorthStar } from '../lib/north-star-selectors'
+import { hasNorthStar } from '../lib/north-star-selectors'
 import type { NorthStar } from '../types/north-star'
 import { ROUTES } from '../routes/paths'
 import styles from './DashboardPage.module.css'
@@ -56,12 +58,7 @@ function AddTaskPrompt({ draftTitle, onDraftChange, onSubmit }: AddTaskPromptPro
   return (
     <>
       <p className={styles.prompt}>지금 눈에 걸리는 아무거나, 사소해도 괜찮아요</p>
-      <input
-        className={styles.input}
-        type="text"
-        value={draftTitle}
-        onChange={(e) => onDraftChange(e.target.value)}
-      />
+      <TextInput value={draftTitle} onChange={onDraftChange} />
       <Button variant="primary" disabled={!draftTitle.trim()} onClick={onSubmit}>
         다음
       </Button>
@@ -132,11 +129,6 @@ function DischargeLink({ onEnter }: { onEnter: () => void }) {
 // 동안만 보이고, 언마운트 시 정리된다(RetroPage의 capturedThought와 동일 패턴).
 function DischargeEndBanner({ message }: { message: string }) {
   return <p className={styles.dischargeEndBanner}>{message}</p>
-}
-
-// PH-09 §9 — 정적 텍스트만, 탭 핸들러 없음(진행 측정기 아님). 수정은 오직 설정 화면 경유로만.
-function NorthStarBadge({ northStar }: { northStar: NorthStar }) {
-  return <p className={styles.northStarBadge}>{formatNorthStarSummary(northStar)}</p>
 }
 
 // PH-09 — 북극성 배지/초대 링크 + 설정 진입점. 설정 링크는 방전 링크와 달리 활성 블록 여부와
