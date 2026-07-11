@@ -291,6 +291,7 @@ color.energy.fill #E79B62    evidence.fill  ← 신성불가침    (action·evid
 - [ ] `mode:focus`/`discharge`가 `action`·`evidence`를 재지정하지 않았는가
 - [ ] 점등 모션이 `duration.cell`+`easing.quiet`이고 reduced-motion 대체가 있는가
 - [ ] 폰트가 `font.serif`/`font.sans` 2종을 넘지 않는가
+- [ ] `StateChip`이 회고 페이지 배럴 밖에서 import되지 않았는가 (PH-04.4 §1-3 — 회고 인정칩 색이 다른 화면으로 새면 성적표 도장처럼 각인됨)
 
 ---
 
