@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-10T13:52:20.609Z -->
+<!-- 마지막 생성: 2026-07-11T02:13:57.388Z -->
 
 ## src/
 ```
@@ -156,6 +156,7 @@ types/
 ```
 DECISIONS.md
 DESIGN-BRIEF.md
+DESIGN-SYSTEM.md
 DESIGN-TOKENS.md
 README.md
 SCREEN-FLOW.md
@@ -173,6 +174,8 @@ phases/
   PH-02-state.md
   PH-03-shell.md
   PH-04-tokens-ui.md
+  PH-04.2-design-assembly-spec.md
+  PH-04.3-design-assembly-retrofit.md
   PH-05-core-loop.md
   PH-05.1-core-loop-remediation.md
   PH-06-edge-cases.md

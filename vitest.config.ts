@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
@@ -9,6 +9,8 @@ export default defineConfig({
     // exists — without this, DOM from one component test leaks into the next.
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // e2e/ holds Playwright specs (own test.describe runner) — vitest must not collect them.
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

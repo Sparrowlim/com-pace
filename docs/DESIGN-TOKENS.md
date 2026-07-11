@@ -593,12 +593,13 @@ color.energy.fill #E79B62    evidence.fill  ← 신성불가침    (action·evid
 3. **✔ CTA 텍스트 대비 — PH-04 착수 전 실측·수정 완료.** `action.text`(구 `color.accent.on` #FFF7EE) on `action`(#E79155) = **2.31:1**, README §0-1① 기준(≥4.5:1) 미달 확인 → `action.text`를 `color.ink.900`(#3F382F)로 재매핑, **4.72:1**로 통과(§3·§9 반영, 배경 `action` 자체는 불변 — DB-02 브랜드 색 유지). `text.quiet`(#B5A78E) on `surface.base`(#F6F1E6) = **2.10:1** — 이건 §0-1① "의도적 조용 요소" 면제 대상이라 수정 없이 기록만.
 4. **⚠️ `evidence.fill` 비텍스트 대비 — 미해결, 결정 필요.** `evidence.fill`(#E79B62)이 `surface.base`(#F6F1E6) 대비 **2.01:1**, `surface.page`(#E7DECF) 대비 **1.70:1** — README §0-1② 비텍스트 기준(≥3:1) 미달. `evidence.ring`을 상시 테두리로 얹는 보완도 표면별 편차가 커 불충분(`surface.base` 3.08:1은 통과하나 `surface.page` 2.60·`cream.400` 2.83은 여전히 미달). §5-1 "상태별 분기 금지"는 유지한 채 **단일 `evidence.fill` hex 자체를 더 진하게 재조정**하는 게 유일한 확실한 해법으로 보이나, 이 색은 제품의 가장 상징적인 "증거" 색(§0/§3 CLAUDE.md)이라 브리프·사용자 승인 없이 임의 변경하지 않음. **PH-04는 이 값을 그대로 소비하고, 자동화 대비 검증에서 이 항목만 "기록"으로 표시(가드 통과 아님)** — 해결 전까지 남는 리스크로 SPEC 리스크 레지스터 등재 권장.
 5. **간격·라인하이트 스케일 확장** — 컴포넌트 토큰 단계에서 line-height 토큰 추가 예정.
-6. **컴포넌트 토큰(다음 단계)** — `Button`·`Chip`·`TaskCard`·`EnergyBar`·`OptionRow`·`BottomSheet`를 이 semantic 위에 얹으면 SCREEN-FLOW 재구성이 "조립"만 남는다.
+6. **✔ 컴포넌트 조립 규약 — `PH-04.2`에서 완료.** 여백 리듬(3계층)·타이포 위계(≤3단계)·elevation 서열(6종 매핑)·모션 일관성 표는 [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) 참조(원리 차용/거부 근거는 `DECISIONS.md D-27`). 6종 컴포넌트·9개 페이지 전수 소급 대조는 `PH-04.3` 범위.
 
 ---
 
 ## Changelog
 
+- **v0.5** — `PH-04.2` 완료로 §10-6 항목 6("컴포넌트 토큰(다음 단계)")을 [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) 링크로 교체(여백 리듬·타이포 위계·elevation 서열·모션 일관성 표 신설, 토큰 값 자체는 무변경).
 - **v0.4** — PH-04 `Chip` 프리미티브 구현 중 발견: `color.chip.bg`/`color.chip.line`(§2-4)가 primitive로만 존재하고 semantic 승격이 누락돼 있었음(§3에 행 없음) — CSS 파이프라인이 semantic 계층만 노출하므로 이 상태로는 Chip이 자기 색을 참조할 방법이 없었다. `chip.bg`/`chip.line` semantic을 §3·§9에 추가(값 변경 없음, 순수 승격). 동시에 `semantic.action`을 DTCG 규격 위반(한 노드가 `$value`와 자식 토큰을 동시에 가짐) 수정 위해 `action.DEFAULT`로 재구조화(§8에 근거 기록).
 - **v0.3** — PH-04 착수 전 WCAG 실측(§10-3 예비 조항 이행). `action.text`를 `color.accent.on`→`color.ink.900`로 재매핑(CTA 텍스트 대비 2.31:1→4.72:1, 배경 `action` 불변). `evidence.fill` 비텍스트 대비 미달(1.70~2.01:1 vs ≥3:1) 발견 — 브랜드 상징색이라 임의 수정하지 않고 §10-4에 미해결 기록, PH-04 자동화 검증에서 "기록"으로만 표시.
 - **v0.2** — 방전톤(`color.calm`)을 **브리프 기준으로 정리**: 최종값은 `DESIGN-BRIEF §3/§7`이 소유(세이지 지향·미정), 와이어 블루그레이는 **관측·미채택**으로 강등(§2-6·§10·§9 desc). 나머지 방향(폰트 후보 등)도 브리프 소유 재확인. 기술 스택 매핑은 별도 세션에서 진행.
