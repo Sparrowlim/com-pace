@@ -8,6 +8,7 @@ const VIEWPORT_WIDTHS = [320, 390, 768] as const
 test.describe('TaskCard', () => {
   // 뷰포트를 테스트 안에서 직접 지정하므로(320/390/768), 4개 프로젝트 매트릭스 중복 실행은
   // 불필요하다 — 한 프로젝트에서만 돈다.
+  // eslint-disable-next-line no-empty-pattern -- Playwright의 fixture-skip 관용구(공식 문서 패턴)
   test.beforeEach(({}, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile-320', '뷰포트는 테스트 내부에서 직접 지정')
   })

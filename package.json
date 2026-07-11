@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
+    "lint:css": "stylelint \"src/**/*.css\"",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "jsdom": "^25.0.1",
     "prettier": "^3.4.2",
     "style-dictionary": "^5.5.0",
+    "stylelint": "^17.14.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.19.1",
     "vite": "^6.0.7",

@@ -12,6 +12,7 @@
   font-size: var(--font-size-md);
   text-align: left;
   cursor: pointer;
+  box-shadow: var(--elevation-inner);
   transition: background-color var(--duration-fast) var(--easing-quiet);
 }
 

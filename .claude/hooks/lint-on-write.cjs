@@ -12,10 +12,16 @@ process.stdin.on('end', () => {
   }
 
   const filePath = input.tool_input && input.tool_input.file_path
-  if (!filePath || !/\.(ts|tsx)$/.test(filePath)) process.exit(0)
+  if (!filePath) process.exit(0)
 
-  spawnSync(process.execPath, [resolveBin('eslint'), '--fix', filePath], {
-    stdio: 'ignore',
-  })
+  if (/\.(ts|tsx)$/.test(filePath)) {
+    spawnSync(process.execPath, [resolveBin('eslint'), '--fix', filePath], {
+      stdio: 'ignore',
+    })
+  } else if (/\.css$/.test(filePath) && !filePath.includes('tokens.generated.css')) {
+    spawnSync(process.execPath, [resolveBin('stylelint'), '--fix', filePath], {
+      stdio: 'ignore',
+    })
+  }
   process.exit(0)
 })

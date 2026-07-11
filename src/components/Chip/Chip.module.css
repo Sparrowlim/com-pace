@@ -4,7 +4,7 @@
   justify-content: center;
   min-height: 44px; /* README §0-1② 터치 타깃 ≥44×44 CSS px */
   min-width: 44px;
-  padding: var(--space-2) var(--space-5);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   font-family: var(--font-family-sans);
@@ -31,4 +31,5 @@
   background-color: var(--action-tint);
   color: var(--action-ink);
   border-color: transparent;
+  box-shadow: var(--elevation-soft);
 }

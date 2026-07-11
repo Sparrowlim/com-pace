@@ -47,7 +47,7 @@
 .options {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 /* PH-08 §5 — 회고 스킵을 대신하는 방전 종료 한 줄. 처벌색 없음, 담백한 인정 톤. */
