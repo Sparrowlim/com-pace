@@ -101,7 +101,58 @@
 
 ---
 
+## 5. 컴포넌트 카탈로그 (11종)
+
+`PH-04.4` 감사·소급 산출물. SCREEN-FLOW §1의 모든 화면이 아래 11종의 조합만으로 설명 가능해야 한다(§6). "가드레일 근거" 열은 `phases/PH-04.4-component-catalog.md` Phase 1 워크시트의 요약 인용 — 각 형태를 "왜 이것이고 왜 다른 형태가 아닌가"까지 보려면 그 문서의 페르소나 K 마찰 시나리오·기각한 대안을 참조한다.
+
+### 기존 6종 (PH-04, PH-04.3 소급 감사 완료)
+
+| 컴포넌트                 | 위치                                     | 핵심 규약                                                                                                                     | 가드레일 근거                                 |
+| ------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `Button`                 | `src/components/Button`                  | `variant="primary"`만 `elevation.cta`(발광), `secondary`는 아웃라인만 — 테라코타 없음                                         | DB-02 하드 · §5-3(`action`=즉시성의 순간에만) |
+| `Chip`                   | `src/components/Chip`                    | 선택됨 상태에서만 `elevation.soft`, 기본은 평면                                                                               | §3 elevation 서열                             |
+| `TaskCard`               | `src/components/TaskCard`                | `elevation.card`, 대표 콘텐츠 카드. mode-agnostic — 방전 분기는 상위 DOM `[data-mode]`가 처리, 컴포넌트 자체엔 모드 prop 없음 | §3 elevation 서열 · DESIGN-TOKENS §4-2        |
+| `EnergyBar`/`EnergyCell` | `src/components/EnergyBar`, `EnergyCell` | `elevation` 0(무-elevation, 의도), `evidence.fill` 단일 색만(완료/미완료/방전 상태 분기 없음)                                 | CLAUDE §2 실패 무처벌 · DESIGN-TOKENS §5-1    |
+| `OptionRow`              | `src/components/OptionRow`               | `elevation.inner`, 선택 가능한 낮은 표면(눌린 듯한 미세 깊이)                                                                 | §3 elevation 서열                             |
+| `BottomSheet`            | `src/components/BottomSheet`             | `elevation.sheet`, 화면 전체를 덮는 최상단 오버레이                                                                           | §3 elevation 서열                             |
+
+### 신규 5종 (PH-04.4)
+
+| 컴포넌트         | 위치                                                      | 핵심 규약                                                                                                                                                                        | 가드레일 근거                                                              |
+| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `TextInput`      | `src/components/TextInput`                                | `surface.raised`+`border.default` 무테두리에 가까운 단일 상태. 포커스는 `border`→`action.ink`(텍스트색 전환, 배경 불변). `required`/`error`/`maxLength` props 자체가 타입에 없음 | CLAUDE §2 결정 피로 차단 · §4 톤 · DESIGN-TOKENS §5-2 처벌색 없음          |
+| `TimerDisplay`   | `src/components/TimerDisplay`                             | 진행률(링·퍼센트·잔여 블록) 완전 배제 — 분 단위 큰 숫자 + 동사 라벨만. `running`/`paused`(`dark.bgDeep`)/`discharge`(문구만 다름, 크기·서체 동일) 3 variant                      | CLAUDE §1 정체성 경계 · §2 결정 피로 차단 · §6 체크리스트 6번(볼거리 금지) |
+| `StateChip`      | `src/pages/RetroPage/` 로컬(비공개 — `src/components` 밖) | 회고 페이지 배럴 밖에서 import 불가(파일 위치로 물리적 제한). 카피는 "완료"/"이어감"만(실패·미완료 단어 UI 노출 금지)                                                            | DESIGN-TOKENS §3 결정#6 경계 조건 · CLAUDE §2·§4                           |
+| `BonusCard`      | `src/components/BonusCard`                                | `hit=false` → `null` 반환(조건부 렌더가 시그니처 자체에 강제됨, 빈 카드·placeholder 없음)                                                                                        | SCREEN-FLOW §3-2 · DESIGN-TOKENS §5-4                                      |
+| `NorthStarBadge` | `src/components/NorthStarBadge`                           | 순수 정적 텍스트. `onClick` prop이 타입에 존재하지 않음(탭 핸들러 자체가 불가능)                                                                                                 | SPEC §9 "진행 측정기 아님" · CLAUDE §1·§5                                  |
+
+---
+
+## 6. 조립 레시피 (SCREEN-FLOW §1 화면별 프리미티브 조합)
+
+**규칙:** 이 표에 없는 화면 = 카탈로그 커버리지 게이트 위반. 새 화면을 추가할 때 이 표에 먼저 한 행을 채우고, 기존 11종으로 설명이 안 될 때만 §5에 12번째 컴포넌트를 신설한다(신설 전에 "기존 조합으로 충분한가"부터 검토 — 아래 기각 사례 참조).
+
+| 화면 ID(SCREEN-FLOW §1) | 화면                               | 조립 = 프리미티브 조합                                                                                                         | 비고                                                                                                                                                            |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1                       | 면죄부 3화면                       | `TaskCard` + `Button`                                                                                                          | 3스텝 카피 스왑, 컴포넌트 조합은 불변(`OnboardingPage`)                                                                                                         |
+| 1-A / 2z / 3-A          | 아무거나 입력(신규·소진 후 재진입) | `TextInput` + `Button`                                                                                                         | 대시보드 `AddTaskPrompt` 조립 하나가 3개 화면 상태를 겸함 — 별도 컴포넌트 불필요                                                                                |
+| 1-B                     | 북극성(선택)                       | `TextInput`×2 + `Button`×2                                                                                                     | 열망/의무 각각 `TextInput`, 저장/건너뛰기 `Button`(`NorthStarPage`)                                                                                             |
+| 3                       | 과제 쪼개기                        | `TaskCard` + `TextInput` + `Chip`(동사칩 반복) + `Button`                                                                      | 조각 입력은 `TextInput`, 동사칩은 기존 `Chip` 재사용(`SplitPage`)                                                                                               |
+| 2                       | 대시보드(홈)                       | `NorthStarBadge`(선택) + `TaskCard`류(진행중/CTA/조각선택 변형) + `OptionRow`(조각 2개 이상 자기선택) + `Button` + `EnergyBar` | One Task 분기별로 `TaskCard` 내부 조합만 바뀐다 — 새 primitive 없음(`DashboardPage`)                                                                            |
+| 4                       | 사전 예측                          | `OptionRow`×2                                                                                                                  | 2지선다(`PredictPage`)                                                                                                                                          |
+| 5                       | 집중 화면                          | `TimerDisplay`                                                                                                                 | `[data-mode="focus"]` ambient 오버레이가 다크 전환을 담당 — 컴포넌트 자체엔 mode prop 없음                                                                      |
+| 5-A                     | 딴생각 포착                        | `BottomSheet` + `TextInput`(multiline) + `Button`                                                                              | §1-6 기각 근거 — 새 모달 primitive 대신 기존 `BottomSheet` 재사용(학습 비용 최소화)                                                                             |
+| 5-B                     | 일시정지                           | `BottomSheet` + `Button`×2                                                                                                     | §1-6 기각 근거 — "그만하기"도 중립 어휘, 버튼 44×44px 이상(오탭 방지)                                                                                           |
+| 6 / 6′ / 7 / 7′         | 회고 4조합                         | `StateChip` + `OptionRow`×3(영점조절) + `BonusCard`(적중 시만) + `EnergyBar` + `Button`                                        | 6′/7′은 6/7과 완전 동일 렌더(SCREEN-FLOW §3-2) — `BonusCard`가 `hit=false`일 때 `null`을 반환하는 것만으로 4조합이 2가지 렌더로 수렴, 별도 분기 컴포넌트 불필요 |
+| 6-A                     | 휴식                               | —                                                                                                                              | **미구현**(`routes/paths.ts`에 대응 라우트 없음) — 코드가 없는 화면은 조립 레시피로 설명할 대상이 없다, 이 위상 범위 밖                                         |
+| 방전 진입               | 방전 진입                          | `Button`×2(primary+secondary)                                                                                                  | `DischargeEntryPage`                                                                                                                                            |
+| 방전 대시보드           | 방전 대시보드                      | `TaskCard` + `Button`×2                                                                                                        | §1-6 기각 근거 — "QuietLink" 신규 primitive 기각, `[data-mode="discharge"]` ambient 오버레이만 얹음(`DischargeDashboardPage`)                                   |
+| 9                       | 설정                               | `OptionRow`×2(알림 on/off) + `NorthStarBadge`(있을 때만) + `Button`×2                                                          | `NorthStarBadge` 재사용(`SettingsPage`), 빈 상태 초대 문구는 화면 로컬 유지(대시보드와 다른 카피 — 화면 고유 재량)                                              |
+
+---
+
 ## Changelog
 
+- **v0.3(PH-04.4, 2026-07-11)** — §5 컴포넌트 카탈로그(기존 6종 + 신규 5종 `TextInput`/`TimerDisplay`/`StateChip`/`BonusCard`/`NorthStarBadge`) 신설, §6 조립 레시피(SCREEN-FLOW §1 화면별 프리미티브 조합 표) 신설. `PH-04.4-component-catalog.md` Phase 1 워크시트 소스 코드 대조 검증 완료(감사 누락 1건 보정 — `SplitPage`의 `TextInput` 재발명 4번째 위치 반영). 토큰 값 자체는 무변경.
 - **v0.2(PH-04.3, 2026-07-11)** — `Button`/`Chip` 여백 계층 관찰, `Button.primary`/`Chip.selected`/`OptionRow` elevation 매핑 누락 관찰을 소급 수정으로 해소(§1·§3 관찰 문단을 "✔ 해소"로 갱신). 이 문서 자체의 규약(계층 정의·매핑표)은 무변경.
 - **v0.1** — 최초 작성(PH-04.2). `DESIGN-TOKENS.md §10-6` 항목 6("컴포넌트 토큰(다음 단계)")을 채움. 여백 리듬(3계층)·타이포 위계(≤3단계)·elevation 서열(6종 매핑)·모션 일관성 표 신설. `TaskCard` 파일럿 대조 결과 4개 절 전부 편차 없음(배치 변경 불필요) — `Button`/`Chip`/`OptionRow`의 기존 미스매치는 관찰로 기록하고 `PH-04.3` 소급 감사로 이관.
