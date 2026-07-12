@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-11T07:25:06.608Z -->
+<!-- 마지막 생성: 2026-07-12T09:43:39.916Z -->
 
 ## src/
 ```
@@ -119,6 +119,9 @@ pages/
   PredictPage.module.css
   PredictPage.test.tsx
   PredictPage.tsx
+  RestPage.module.css
+  RestPage.test.tsx
+  RestPage.tsx
   RetroPage.module.css
   RetroPage.test.tsx
   RetroPage.tsx
@@ -199,6 +202,7 @@ phases/
   PH-04.4-component-catalog.md
   PH-05-core-loop.md
   PH-05.1-core-loop-remediation.md
+  PH-05.2-retro-screens-remediation.md
   PH-06-edge-cases.md
   PH-06.1-carryover-requeue.md
   PH-07-onboarding.md

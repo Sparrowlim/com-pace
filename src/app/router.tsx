@@ -9,6 +9,7 @@ const SplitPage = lazy(() => import('../pages/SplitPage'))
 const PredictPage = lazy(() => import('../pages/PredictPage'))
 const FocusPage = lazy(() => import('../pages/FocusPage'))
 const RetroPage = lazy(() => import('../pages/RetroPage'))
+const RestPage = lazy(() => import('../pages/RestPage'))
 const DischargeEntryPage = lazy(() => import('../pages/DischargeEntryPage'))
 const DischargeDashboardPage = lazy(() => import('../pages/DischargeDashboardPage'))
 const SettingsPage = lazy(() => import('../pages/SettingsPage'))
@@ -25,6 +26,7 @@ export const routeObjects: RouteObject[] = [
       { path: ROUTES.predict, element: <PredictPage /> },
       { path: ROUTES.focus, element: <FocusPage /> },
       { path: ROUTES.retro, element: <RetroPage /> },
+      { path: ROUTES.rest, element: <RestPage /> },
       { path: ROUTES.dischargeEntry, element: <DischargeEntryPage /> },
       { path: ROUTES.dischargeDashboard, element: <DischargeDashboardPage /> },
       { path: ROUTES.settings, element: <SettingsPage /> },

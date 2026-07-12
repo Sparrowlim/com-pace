@@ -14,6 +14,7 @@ function renderRetroPage() {
       { path: ROUTES.dashboard, element: <div>DASHBOARD_STUB</div> },
       { path: ROUTES.predict, element: <div>PREDICT_STUB</div> },
       { path: ROUTES.focus, element: <div>FOCUS_STUB</div> },
+      { path: ROUTES.rest, element: <div>REST_STUB</div> },
     ],
     { initialEntries: [ROUTES.retro] },
   )
@@ -72,7 +73,7 @@ describe('RetroPage — no resolved block', () => {
 })
 
 describe('RetroPage — completed + prediction hit', () => {
-  test('shows the bonus card and a single next-block button', async () => {
+  test('shows the bonus card, the next-block button and the rest button', async () => {
     useAppStore.setState({
       lastResolvedBlock: makeBlock({ status: 'done' }),
       predictions: [{ blockId: 'block-1', guess: true, actual: true }],
@@ -81,6 +82,7 @@ describe('RetroPage — completed + prediction hit', () => {
 
     expect(await screen.findByText('예측이 딱 맞았어요.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '바로 다음 블록' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '잠시 쉬기' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '이어서 15분 더' })).not.toBeInTheDocument()
   })
 
@@ -111,6 +113,29 @@ describe('RetroPage — completed + prediction hit', () => {
     await user.click(await screen.findByRole('button', { name: '바로 다음 블록' }))
 
     expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+  })
+})
+
+describe('RetroPage — 6-A 휴식 (PH-05.2, SCREEN-FLOW §2 DONE_HIT/DONE_MISS --"잠시 쉬기"--> REST)', () => {
+  test('"잠시 쉬기" navigates to /rest', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({
+      lastResolvedBlock: makeBlock({ status: 'done' }),
+      predictions: [{ blockId: 'block-1', guess: true, actual: true }],
+    })
+    renderRetroPage()
+
+    await user.click(await screen.findByRole('button', { name: '잠시 쉬기' }))
+
+    expect(await screen.findByText('REST_STUB')).toBeInTheDocument()
+  })
+
+  test('incomplete block never renders the rest button (SCREEN-FLOW §2: no REST arrow from INC_HIT/INC_MISS)', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'incomplete' }) })
+    renderRetroPage()
+
+    await screen.findByText('오늘은 여기까지, 15분만큼의 증거는 남았어요.')
+    expect(screen.queryByRole('button', { name: '잠시 쉬기' })).not.toBeInTheDocument()
   })
 })
 

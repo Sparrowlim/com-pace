@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { EnergyBar } from '../components/EnergyBar'
 import { Button } from '../components/Button'
 import { OptionRow } from '../components/OptionRow'
 import { BonusCard } from '../components/BonusCard'
 import { useAppStore } from '../store'
-import { selectActiveTask, selectNextQueuedBlock } from '../lib/core-loop-selectors'
+import { resolveNextRoute } from '../lib/core-loop-selectors'
 import type { TimeSenseFeedback } from '../store/slices/retro-context-slice'
+import type { Block } from '../types/block'
 import { ROUTES } from '../routes/paths'
 import styles from './RetroPage.module.css'
 
@@ -79,19 +80,26 @@ function CapturedThoughtCard({
 function RetroActions({
   completed,
   onNext,
+  onRest,
   onContinue,
   onStop,
 }: {
   completed: boolean
   onNext: () => void
+  onRest: () => void
   onContinue: () => void
   onStop: () => void
 }) {
   if (completed) {
     return (
-      <Button variant="primary" onClick={onNext}>
-        바로 다음 블록
-      </Button>
+      <div className={styles.actions}>
+        <Button variant="primary" onClick={onNext}>
+          바로 다음 블록
+        </Button>
+        <Button variant="secondary" onClick={onRest}>
+          잠시 쉬기
+        </Button>
+      </div>
     )
   }
   return (
@@ -106,13 +114,31 @@ function RetroActions({
   )
 }
 
-function resolveNextRoute(
-  tasks: Parameters<typeof selectActiveTask>[0],
-  queuedBlocks: Parameters<typeof selectActiveTask>[1],
-): string {
-  const task = selectActiveTask(tasks, queuedBlocks)
-  const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
-  return next ? ROUTES.predict : ROUTES.dashboard
+// RetroPage 본체를 50줄 제한 아래로 유지하려는 팩토리 추출 — makeThoughtActions와 동일 패턴
+// (PH-09 DashboardPage.handleAddTask 선례).
+function makeRetroActions(
+  navigate: (path: string) => void,
+  tasks: Parameters<typeof resolveNextRoute>[0],
+  queuedBlocks: Parameters<typeof resolveNextRoute>[1],
+  block: Block,
+  startBlock: (taskId: string, verbLabel: string) => Promise<unknown>,
+  queueBlocks: (taskId: string, verbLabels: string[]) => void,
+) {
+  return {
+    handleNext: () => navigate(resolveNextRoute(tasks, queuedBlocks)),
+    handleRest: () => navigate(ROUTES.rest),
+    handleContinue: async () => {
+      await startBlock(block.taskId, block.verbLabel)
+      navigate(ROUTES.focus)
+    },
+    // PH-06.1 — "오늘은 여기까지"는 조각을 버리지 않고 같은 과제 큐 후미로 되돌린다(세션 내 이월,
+    // SPEC §6 경계 주). queueBlocks가 이미 후미 append + 신규 id 발급을 하므로 그대로 재사용한다.
+    // "이어서 15분 더"는 같은 조각을 즉시 재시작해 소멸이 없으므로 재큐잉하지 않는다.
+    handleStop: () => {
+      queueBlocks(block.taskId, [block.verbLabel])
+      navigate(ROUTES.dashboard)
+    },
+  }
 }
 
 function makeThoughtActions(
@@ -152,7 +178,6 @@ function useClearRetroContextOnUnmount(
 
 function useRetroStoreState() {
   return {
-    lastResolvedBlock: useAppStore((state) => state.lastResolvedBlock),
     predictions: useAppStore((state) => state.predictions),
     energyCells: useAppStore((state) => state.energyCells),
     tasks: useAppStore((state) => state.tasks),
@@ -168,37 +193,35 @@ function useRetroStoreState() {
 }
 
 export default function RetroPage() {
+  // React 18 StrictMode(dev)는 마운트 직후 effect를 클린업→재실행 한 번 더 시뮬레이션한다.
+  // useClearRetroContextOnUnmount의 클린업이 그 순간 스토어의 lastResolvedBlock을 null로 되돌리면서
+  // (실제 언마운트가 아님) 아래 가드가 오작동해 회고 화면이 뜨자마자 대시보드로 튕겨나갔다(PH-05.2
+  // 리포트). 라이브 구독 대신 마운트 시점 스냅샷을 렌더 기준으로 삼아 그 순간적 null에 반응하지 않게 한다.
+  const [block] = useState(() => useAppStore.getState().lastResolvedBlock)
   const store = useRetroStoreState()
-  const { lastResolvedBlock, predictions, energyCells, tasks, queuedBlocks } = store
+  const { predictions, energyCells, tasks, queuedBlocks } = store
   const { startBlock, setLastResolvedBlock, capturedThought, setCapturedThought, queueBlocks } =
     store
   const { timeSenseFeedback, setTimeSenseFeedback } = store
   const navigate = useNavigate()
   useClearRetroContextOnUnmount(setLastResolvedBlock, setCapturedThought, setTimeSenseFeedback)
 
-  if (!lastResolvedBlock) {
+  if (!block) {
     return <Navigate to={ROUTES.dashboard} replace />
   }
 
-  const block = lastResolvedBlock
   const completed = block.status === 'done'
   const prediction = predictions.find((p) => p.blockId === block.id)
   const hit = prediction ? prediction.guess === prediction.actual : false
 
-  const handleNext = () => navigate(resolveNextRoute(tasks, queuedBlocks))
-
-  const handleContinue = async () => {
-    await startBlock(block.taskId, block.verbLabel)
-    navigate(ROUTES.focus)
-  }
-
-  // PH-06.1 — "오늘은 여기까지"는 조각을 버리지 않고 같은 과제 큐 후미로 되돌린다(세션 내 이월,
-  // SPEC §6 경계 주). queueBlocks가 이미 후미 append + 신규 id 발급을 하므로 그대로 재사용한다.
-  // "이어서 15분 더"는 같은 조각을 즉시 재시작해 소멸이 없으므로 재큐잉하지 않는다.
-  const handleStop = () => {
-    queueBlocks(block.taskId, [block.verbLabel])
-    navigate(ROUTES.dashboard)
-  }
+  const { handleNext, handleRest, handleContinue, handleStop } = makeRetroActions(
+    navigate,
+    tasks,
+    queuedBlocks,
+    block,
+    startBlock,
+    queueBlocks,
+  )
 
   const thoughtActions = makeThoughtActions(
     capturedThought,
@@ -220,6 +243,7 @@ export default function RetroPage() {
       <RetroActions
         completed={completed}
         onNext={handleNext}
+        onRest={handleRest}
         onContinue={handleContinue}
         onStop={handleStop}
       />

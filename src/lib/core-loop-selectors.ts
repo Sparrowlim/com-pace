@@ -1,5 +1,6 @@
 import type { Task } from '../types/task'
 import type { QueuedBlock } from '../store/slices/block-queue-slice'
+import { ROUTES } from '../routes/paths'
 
 /**
  * One Task 불변식(CLAUDE §2) 덕분에 "활성 과제"는 항상 최대 1개다 — 별도 currentTaskId를
@@ -25,4 +26,12 @@ export function selectQueuedBlocksForTask(
   taskId: string,
 ): QueuedBlock[] {
   return queuedBlocks.filter((block) => block.taskId === taskId)
+}
+
+// PH-05.2 — RetroPage("바로 다음 블록")·RestPage("다음 블록")가 공유하는 다음 블록 분기(SCREEN-FLOW
+// §3-4 NEXT). 남은 블록이 있으면 예측 경유, 없으면 과제 소진 → 대시보드(zero).
+export function resolveNextRoute(tasks: Task[], queuedBlocks: QueuedBlock[]): string {
+  const task = selectActiveTask(tasks, queuedBlocks)
+  const next = task ? selectNextQueuedBlock(queuedBlocks, task.id) : undefined
+  return next ? ROUTES.predict : ROUTES.dashboard
 }

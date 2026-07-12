@@ -5,6 +5,7 @@ export const ROUTES = {
   predict: '/predict',
   focus: '/focus',
   retro: '/retro',
+  rest: '/rest',
   dischargeEntry: '/discharge',
   dischargeDashboard: '/discharge/dashboard',
   settings: '/settings',
