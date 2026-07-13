@@ -1,8 +1,19 @@
+/* ADHD 공간 일관성(DESIGN-SYSTEM.md §1-1) — 대시보드는 카드/비카드 상태가 공존해 콘텐츠
+   높이가 상태마다 다르지만, 방전 링크+EnergyBar(그날의 증거)는 상태와 무관하게 항상 뷰포트
+   하단 같은 자리에 있어야 한다. */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  min-height: 100svh;
   padding: var(--space-6);
+}
+
+.bottomGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: auto;
 }
 
 .header {

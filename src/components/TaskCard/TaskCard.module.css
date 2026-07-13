@@ -6,6 +6,7 @@
 .card {
   background-color: var(--surface-base);
   color: var(--text-primary);
+  border: 1px solid var(--border-raised);
   border-radius: var(--radius-2xl);
   box-shadow: var(--elevation-card);
   padding: var(--space-7);

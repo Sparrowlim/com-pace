@@ -284,8 +284,10 @@ export default function DashboardPage() {
           navigate(ROUTES.predict)
         }}
       />
-      {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}
-      <EnergyBar filledCount={energyCells.length} />
+      <div className={styles.bottomGroup}>
+        {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}
+        <EnergyBar filledCount={energyCells.length} />
+      </div>
     </div>
   )
 }
