@@ -2,6 +2,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { OptionRow } from '../components/OptionRow'
 import { useAppStore } from '../store'
 import { selectActiveTask, selectNextQueuedBlock } from '../lib/core-loop-selectors'
+import { todayDateString } from '../lib/time'
 import { ROUTES } from '../routes/paths'
 import styles from './PredictPage.module.css'
 
@@ -12,6 +13,7 @@ export default function PredictPage() {
   const dequeueBlock = useAppStore((state) => state.dequeueBlock)
   const startBlock = useAppStore((state) => state.startBlock)
   const setPrediction = useAppStore((state) => state.setPrediction)
+  const startSession = useAppStore((state) => state.startSession)
   const navigate = useNavigate()
 
   // One Task 불변식(CLAUDE §2) — 브라우저 뒤로가기로 돌아와도 이미 진행 중인 블록이 있으면
@@ -36,6 +38,7 @@ export default function PredictPage() {
     dequeueBlock(nextId)
     const block = await startBlock(taskId, nextVerbLabel)
     await setPrediction(block.id, guess)
+    await startSession(todayDateString(), false)
     navigate(ROUTES.focus)
   }
 

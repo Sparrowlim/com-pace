@@ -44,6 +44,7 @@ beforeEach(() => {
     activeBlock: null,
     capturedThought: null,
     timeSenseFeedback: null,
+    sessions: [],
   })
 })
 
@@ -187,6 +188,10 @@ describe('RetroPage — incomplete + prediction hit', () => {
       taskId: 'task-1',
       verbLabel: '책상 정리하기',
     })
+    // 내부 지표(SPEC §10) — "이어서 15분 더"도 정상 진입이므로 dischargeMode: false로 세션을 남긴다.
+    const { sessions } = useAppStore.getState()
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]).toMatchObject({ dischargeMode: false })
   })
 
   test('"오늘은 여기까지" goes to the dashboard without restarting', async () => {

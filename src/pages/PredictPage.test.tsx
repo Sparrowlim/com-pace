@@ -19,7 +19,13 @@ function renderPredictPage() {
 }
 
 beforeEach(() => {
-  useAppStore.setState({ tasks: [], queuedBlocks: [], activeBlock: null, predictions: [] })
+  useAppStore.setState({
+    tasks: [],
+    queuedBlocks: [],
+    activeBlock: null,
+    predictions: [],
+    sessions: [],
+  })
 })
 
 describe('PredictPage — no next block', () => {
@@ -68,10 +74,13 @@ describe('PredictPage — a queued block is next', () => {
     await user.click(await screen.findByRole('button', { name: '끝날 것 같아요' }))
 
     expect(await screen.findByText('FOCUS_STUB')).toBeInTheDocument()
-    const { queuedBlocks, activeBlock, predictions } = useAppStore.getState()
+    const { queuedBlocks, activeBlock, predictions, sessions } = useAppStore.getState()
     expect(queuedBlocks).toHaveLength(0)
     expect(activeBlock).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
     expect(predictions).toEqual([{ blockId: activeBlock!.id, guess: true, actual: null }])
+    // 내부 지표(SPEC §10) — 정상 진입은 dischargeMode: false로 세션을 남긴다.
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]).toMatchObject({ dischargeMode: false })
   })
 
   test('choosing "더 걸릴 것 같아요" records guess=false', async () => {

@@ -6,6 +6,7 @@ import { OptionRow } from '../components/OptionRow'
 import { BonusCard } from '../components/BonusCard'
 import { useAppStore } from '../store'
 import { resolveNextRoute } from '../lib/core-loop-selectors'
+import { todayDateString } from '../lib/time'
 import type { TimeSenseFeedback } from '../store/slices/retro-context-slice'
 import type { Block } from '../types/block'
 import { ROUTES } from '../routes/paths'
@@ -123,12 +124,14 @@ function makeRetroActions(
   block: Block,
   startBlock: (taskId: string, verbLabel: string) => Promise<unknown>,
   queueBlocks: (taskId: string, verbLabels: string[]) => void,
+  startSession: (date: string, dischargeMode: boolean) => Promise<unknown>,
 ) {
   return {
     handleNext: () => navigate(resolveNextRoute(tasks, queuedBlocks)),
     handleRest: () => navigate(ROUTES.rest),
     handleContinue: async () => {
       await startBlock(block.taskId, block.verbLabel)
+      await startSession(todayDateString(), false)
       navigate(ROUTES.focus)
     },
     // PH-06.1 — "오늘은 여기까지"는 조각을 버리지 않고 같은 과제 큐 후미로 되돌린다(세션 내 이월,
@@ -183,6 +186,7 @@ function useRetroStoreState() {
     tasks: useAppStore((state) => state.tasks),
     queuedBlocks: useAppStore((state) => state.queuedBlocks),
     startBlock: useAppStore((state) => state.startBlock),
+    startSession: useAppStore((state) => state.startSession),
     setLastResolvedBlock: useAppStore((state) => state.setLastResolvedBlock),
     capturedThought: useAppStore((state) => state.capturedThought),
     setCapturedThought: useAppStore((state) => state.setCapturedThought),
@@ -221,6 +225,7 @@ export default function RetroPage() {
     block,
     startBlock,
     queueBlocks,
+    store.startSession,
   )
 
   const thoughtActions = makeThoughtActions(

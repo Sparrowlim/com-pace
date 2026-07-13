@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-13T12:13:21.579Z -->
+<!-- 마지막 생성: 2026-07-13T12:36:24.793Z -->
 
 ## src/
 ```
@@ -92,6 +92,8 @@ lib/
   onboarding-status.ts
   session-timer.test.ts
   session-timer.ts
+  telemetry-selectors.test.ts
+  telemetry-selectors.ts
   time.test.ts
   time.ts
   verb-chips.test.ts

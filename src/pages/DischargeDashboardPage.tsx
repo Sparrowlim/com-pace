@@ -16,6 +16,7 @@ function useDischargeDashboardStoreState() {
     activeBlock: useAppStore((state) => state.activeBlock),
     dischargeMode: useAppStore((state) => state.dischargeMode),
     startBlock: useAppStore((state) => state.startBlock),
+    startSession: useAppStore((state) => state.startSession),
     lightEnergyCell: useAppStore((state) => state.lightEnergyCell),
     exitDischarge: useAppStore((state) => state.exitDischarge),
   }
@@ -24,7 +25,7 @@ function useDischargeDashboardStoreState() {
 export default function DischargeDashboardPage() {
   const store = useDischargeDashboardStoreState()
   const { tasks, queuedBlocks, activeBlock, dischargeMode } = store
-  const { startBlock, lightEnergyCell, exitDischarge } = store
+  const { startBlock, startSession, lightEnergyCell, exitDischarge } = store
   const navigate = useNavigate()
   const [isStarting, setIsStarting] = useState(false)
 
@@ -64,6 +65,7 @@ export default function DischargeDashboardPage() {
     const block = await startBlock(taskId, verbLabel)
     dischargeBlockPointer.set(block.id)
     await lightEnergyCell(block.id, todayDateString())
+    await startSession(todayDateString(), true)
     navigate(ROUTES.focus)
   }
 

@@ -34,6 +34,7 @@ beforeEach(() => {
     queuedBlocks: [],
     activeBlock: null,
     energyCells: [],
+    sessions: [],
     dischargeMode: false,
   })
 })
@@ -118,6 +119,22 @@ describe('DischargeDashboardPage — a runnable fragment exists, dischargeMode o
 
     expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
     expect(useAppStore.getState().dischargeMode).toBe(false)
+  })
+})
+
+describe('DischargeDashboardPage — internal metrics logging (SPEC §10)', () => {
+  test('starting logs a session with dischargeMode: true', async () => {
+    await seedTaskWithQueuedBlock()
+    useAppStore.setState({ dischargeMode: true })
+    renderDischargeDashboardPage()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '타이머만 켜면 승리' }))
+
+    await screen.findByText('FOCUS_STUB')
+    const { sessions } = useAppStore.getState()
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]).toMatchObject({ dischargeMode: true, date: todayDateString() })
   })
 })
 
