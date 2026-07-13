@@ -32,8 +32,11 @@ export default function NorthStarPage() {
         <TextInput value={aspiration} onChange={setAspiration} label="열망 — 원하는 방향" />
         <TextInput value={obligation} onChange={setObligation} label="의무 — 해내야 하는 방향" />
       </div>
+      {/* DESIGN-TOKENS §5-3 — action(테라코타 CTA)은 즉시성의 순간(타이머 시작 등) 전용.
+          북극성 저장은 그 순간이 아니라 "선택 사항"이므로 남기기/건너뛰기 둘 다 동일한
+          보조 무게 — 어느 쪽으로도 떠밀지 않는다(CLAUDE §5 단수·순위 강요 금지). */}
       <div className={styles.actions}>
-        <Button variant="primary" onClick={handleSave}>
+        <Button variant="secondary" onClick={handleSave}>
           남길게요
         </Button>
         <Button variant="secondary" onClick={handleSkip}>

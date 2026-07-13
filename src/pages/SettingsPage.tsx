@@ -32,7 +32,9 @@ export default function SettingsPage() {
       <div className={styles.section}>
         <h2 className={styles.heading}>양가 목표</h2>
         <NorthStarSummary northStar={northStar} />
-        <Button variant="primary" onClick={() => navigate(ROUTES.northStar)}>
+        {/* DESIGN-TOKENS §5-3 — 테라코타 CTA는 즉시성의 순간 전용. 북극성 수정은 타이머 시작과
+            같은 무게가 아니므로 보조 버튼으로(가벼운 좌표, CLAUDE §5). */}
+        <Button variant="secondary" onClick={() => navigate(ROUTES.northStar)}>
           양가 목표 수정
         </Button>
       </div>
