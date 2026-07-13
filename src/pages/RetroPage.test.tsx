@@ -27,6 +27,7 @@ function makeBlock(overrides: Partial<Block> = {}): Block {
     taskId: 'task-1',
     verbLabel: '책상 정리하기',
     status: 'done',
+    date: '2026-07-07',
     startedAt: '2026-07-07T00:00:00.000Z',
     endedAt: '2026-07-07T00:15:00.000Z',
     ...overrides,
@@ -89,7 +90,7 @@ describe('RetroPage — completed + prediction hit', () => {
   test('navigates to predict when another block is queued', async () => {
     const user = userEvent.setup()
     useAppStore.setState({
-      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
       queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기' }],
       lastResolvedBlock: makeBlock({ status: 'done' }),
       predictions: [{ blockId: 'block-1', guess: true, actual: true }],
@@ -173,7 +174,7 @@ describe('RetroPage — incomplete + prediction hit', () => {
   test('"이어서 15분 더" restarts the same fragment and goes to focus', async () => {
     const user = userEvent.setup()
     useAppStore.setState({
-      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
       lastResolvedBlock: makeBlock({ status: 'incomplete', taskId: 'task-1' }),
       predictions: [{ blockId: 'block-1', guess: false, actual: false }],
     })
@@ -230,7 +231,7 @@ describe('RetroPage — PH-06.1 세션 내 이월 (오늘은 여기까지 → �
   test('continue path does not re-add the fragment', async () => {
     const user = userEvent.setup()
     useAppStore.setState({
-      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
       queuedBlocks: [],
       lastResolvedBlock: makeBlock({ status: 'incomplete', taskId: 'task-1' }),
       predictions: [],
@@ -354,7 +355,7 @@ describe('RetroPage — captured thought (SPEC §6 5-A one-time card)', () => {
   test('leaving the screen unprocessed silently clears the captured thought', async () => {
     const user = userEvent.setup()
     useAppStore.setState({
-      tasks: [{ id: 'task-1', title: '청소', createdAt: '', splitDone: true }],
+      tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
       queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기' }],
       lastResolvedBlock: makeBlock({ status: 'done', taskId: 'task-1' }),
       predictions: [{ blockId: 'block-1', guess: true, actual: true }],

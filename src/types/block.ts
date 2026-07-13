@@ -5,6 +5,7 @@ export interface Block {
   taskId: string
   verbLabel: string
   status: BlockStatus
+  date: string
   startedAt: string
   endedAt: string | null
 }

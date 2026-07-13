@@ -11,6 +11,7 @@ describe('idbStorage — create/findById round trip', () => {
     const task: Task = {
       id: 'task-1',
       title: '설거지',
+      date: '2026-07-06',
       createdAt: '2026-07-06T09:00:00Z',
       splitDone: false,
     }
@@ -27,6 +28,7 @@ describe('idbStorage — create/findById round trip', () => {
       taskId: 'task-1',
       verbLabel: '펼치기',
       status: 'in_progress',
+      date: '2026-07-06',
       startedAt: '2026-07-06T09:00:00Z',
       endedAt: null,
     }
@@ -90,6 +92,7 @@ describe('idbStorage.update', () => {
     const task: Task = {
       id: 'task-update-1',
       title: '빨래 개기',
+      date: '2026-07-06',
       createdAt: '2026-07-06T09:00:00Z',
       splitDone: false,
     }
@@ -105,6 +108,7 @@ describe('idbStorage.update', () => {
     const task: Task = {
       id: 'task-update-2',
       title: '분리수거',
+      date: '2026-07-06',
       createdAt: '2026-07-06T09:00:00Z',
       splitDone: false,
     }
@@ -120,6 +124,7 @@ describe('idbStorage.update', () => {
     const task: Task = {
       id: 'task-update-3',
       title: '이메일 확인',
+      date: '2026-07-06',
       createdAt: '2026-07-06T09:00:00Z',
       splitDone: false,
     }
@@ -181,12 +186,80 @@ describe('idbStorage.findByDate', () => {
     expect(results).toEqual(expect.arrayContaining([cellA, cellB]))
     expect(results).not.toEqual(expect.arrayContaining([cellOtherDate]))
   })
+})
 
-  test('throws for a store without a date index', async () => {
-    await expect(idbStorage.findByDate('tasks', '2099-01-01')).rejects.toThrow()
+describe('idbStorage.findByDate (cont.)', () => {
+  test('returns records for the blocks store, indexed by date', async () => {
+    const blockA: Block = {
+      id: 'block-date-a1',
+      taskId: 'task-a1',
+      verbLabel: '펼치기',
+      status: 'done',
+      date: '2099-02-01',
+      startedAt: '2099-02-01T09:00:00Z',
+      endedAt: '2099-02-01T09:15:00Z',
+    }
+    const blockOtherDate: Block = {
+      id: 'block-date-b1',
+      taskId: 'task-b1',
+      verbLabel: '펼치기',
+      status: 'done',
+      date: '2099-02-02',
+      startedAt: '2099-02-02T09:00:00Z',
+      endedAt: '2099-02-02T09:15:00Z',
+    }
+
+    await idbStorage.create('blocks', blockA)
+    await idbStorage.create('blocks', blockOtherDate)
+
+    const results = await idbStorage.findByDate<Block>('blocks', '2099-02-01')
+
+    expect(results).toEqual(expect.arrayContaining([blockA]))
+    expect(results).not.toEqual(expect.arrayContaining([blockOtherDate]))
   })
 
-  test('throws for the blocks store, which has no date field to index', async () => {
-    await expect(idbStorage.findByDate('blocks', '2099-01-01')).rejects.toThrow()
+  test('throws for the predictions store, which is keyed by blockId with no date of its own', async () => {
+    await expect(idbStorage.findByDate('predictions', '2099-01-01')).rejects.toThrow()
+  })
+})
+
+describe('idbStorage.findByDateRange', () => {
+  test('returns records whose date falls within the inclusive bound, across stores', async () => {
+    const taskA: Task = {
+      id: 'task-range-a1',
+      title: '범위 안 A',
+      date: '2099-03-01',
+      createdAt: '2099-03-01T09:00:00Z',
+      splitDone: false,
+    }
+    const taskB: Task = {
+      id: 'task-range-a2',
+      title: '범위 안 B',
+      date: '2099-03-03',
+      createdAt: '2099-03-03T09:00:00Z',
+      splitDone: false,
+    }
+    const taskOutside: Task = {
+      id: 'task-range-b1',
+      title: '범위 밖',
+      date: '2099-03-10',
+      createdAt: '2099-03-10T09:00:00Z',
+      splitDone: false,
+    }
+
+    await idbStorage.create('tasks', taskA)
+    await idbStorage.create('tasks', taskB)
+    await idbStorage.create('tasks', taskOutside)
+
+    const results = await idbStorage.findByDateRange<Task>('tasks', '2099-03-01', '2099-03-05')
+
+    expect(results).toEqual(expect.arrayContaining([taskA, taskB]))
+    expect(results).not.toEqual(expect.arrayContaining([taskOutside]))
+  })
+
+  test('throws for the predictions store, which has no date index', async () => {
+    await expect(
+      idbStorage.findByDateRange('predictions', '2099-01-01', '2099-01-31'),
+    ).rejects.toThrow()
   })
 })

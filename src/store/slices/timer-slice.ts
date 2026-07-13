@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand'
 import type { Block } from '../../types/block'
 import { idbStorage } from '../../storage/idb-storage'
 import { generateId } from '../../lib/id'
-import { nowIso } from '../../lib/time'
+import { nowIso, todayDateString } from '../../lib/time'
 import { computeElapsedSeconds } from '../../lib/session-timer'
 import { activeSessionPointer } from '../../lib/active-session-pointer'
 
@@ -54,6 +54,7 @@ export const createTimerSlice: StateCreator<TimerSlice, [], [], TimerSlice> = (s
       taskId,
       verbLabel,
       status: 'in_progress',
+      date: todayDateString(),
       startedAt: nowIso(),
       endedAt: null,
     }

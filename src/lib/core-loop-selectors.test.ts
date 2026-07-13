@@ -11,6 +11,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
   return {
     id: 'task-1',
     title: '청소',
+    date: '2026-07-07',
     createdAt: '2026-07-07T00:00:00.000Z',
     splitDone: false,
     ...overrides,

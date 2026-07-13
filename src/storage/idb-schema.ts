@@ -6,17 +6,18 @@ import type { EnergyCell } from '../types/energy-cell'
 import type { Session } from '../types/session'
 
 export const DB_NAME = 'com-pace'
-export const DB_VERSION = 1
+export const DB_VERSION = 2
 
 export interface ComPaceDB extends DBSchema {
   tasks: {
     key: string
     value: Task
+    indexes: { date: string }
   }
   blocks: {
     key: string
     value: Block
-    indexes: { taskId: string }
+    indexes: { taskId: string; date: string }
   }
   predictions: {
     key: string

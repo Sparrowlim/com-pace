@@ -42,6 +42,7 @@ async function seedOrphanedBlock(overrides: Partial<Block>): Promise<Block> {
     taskId: 'task-1',
     verbLabel: '책상 정리하기',
     status: 'in_progress',
+    date: '2026-07-07',
     startedAt: '2026-07-07T10:00:00.000Z',
     endedAt: null,
     ...overrides,

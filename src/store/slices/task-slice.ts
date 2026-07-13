@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand'
 import type { Task } from '../../types/task'
 import { idbStorage } from '../../storage/idb-storage'
 import { generateId } from '../../lib/id'
-import { nowIso } from '../../lib/time'
+import { nowIso, todayDateString } from '../../lib/time'
 
 export interface TaskSlice {
   tasks: Task[]
@@ -17,6 +17,7 @@ export const createTaskSlice: StateCreator<TaskSlice, [], [], TaskSlice> = (set)
     const task: Task = {
       id: generateId(),
       title,
+      date: todayDateString(),
       createdAt: nowIso(),
       splitDone: false,
     }

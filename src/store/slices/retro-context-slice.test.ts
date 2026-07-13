@@ -12,6 +12,7 @@ const block: Block = {
   taskId: 'task-1',
   verbLabel: '이메일 확인하기',
   status: 'done',
+  date: '2026-07-07',
   startedAt: '2026-07-07T00:00:00.000Z',
   endedAt: '2026-07-07T00:15:00.000Z',
 }
