@@ -6,7 +6,7 @@ import { Button } from '../components/Button'
 import { TextInput } from '../components/TextInput'
 import { useAppStore } from '../store'
 import { selectActiveTask } from '../lib/core-loop-selectors'
-import { VERB_CHIPS } from '../lib/verb-chips'
+import { VERB_CHIP_GROUPS } from '../lib/verb-chips'
 import { ROUTES } from '../routes/paths'
 import styles from './SplitPage.module.css'
 
@@ -23,10 +23,19 @@ function FragmentEntry({ fragment, onFragmentChange, onPickVerb }: FragmentEntry
         <TextInput value={fragment} onChange={onFragmentChange} label="과제 조각" hideLabel />
       </div>
       <div className={styles.chips}>
-        {VERB_CHIPS.map((verb) => (
-          <Chip key={verb} variant="default" onClick={() => onPickVerb(verb)}>
-            {verb}
-          </Chip>
+        {VERB_CHIP_GROUPS.map((group) => (
+          <div
+            key={group.category}
+            className={styles.chipGroup}
+            role="group"
+            aria-label={group.category}
+          >
+            {group.verbs.map((verb) => (
+              <Chip key={verb} variant="default" onClick={() => onPickVerb(verb)}>
+                {verb}
+              </Chip>
+            ))}
+          </div>
         ))}
       </div>
     </>

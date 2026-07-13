@@ -12,8 +12,14 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin-bottom: var(--space-6);
+}
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .drafts {
