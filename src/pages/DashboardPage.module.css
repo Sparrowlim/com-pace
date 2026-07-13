@@ -16,11 +16,23 @@
   margin-top: auto;
 }
 
+/* 북극성이 두 칩(SPEC §9)으로 늘어나면 320px 폭에서 "설정"과 한 줄에 안 들어갈 수 있다 —
+   설정 버튼을 찌그러뜨리는 대신 줄바꿈으로 흡수한다(설정은 항상 온전한 크기 유지). */
 .header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-4);
+}
+
+.header > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.header > :last-child {
+  flex-shrink: 0;
 }
 
 .prompt {

@@ -10,6 +10,31 @@ describe('NorthStarBadge', () => {
     expect(screen.getByText('열망: 건강해지기')).toBeInTheDocument()
   })
 
+  it('renders aspiration and obligation as two independent chips (SPEC §9 — 나란히, 순위 없음)', () => {
+    render(
+      <NorthStarBadge
+        northStar={{ aspiration: '작가가 되고 싶어요', obligation: '보고서 마감' }}
+      />,
+    )
+    const aspirationChip = screen.getByText('열망: 작가가 되고 싶어요')
+    const obligationChip = screen.getByText('의무: 보고서 마감')
+
+    expect(aspirationChip).toBeInTheDocument()
+    expect(obligationChip).toBeInTheDocument()
+    expect(aspirationChip).not.toBe(obligationChip)
+  })
+
+  it('exposes a single group accessible name for the pair', () => {
+    render(
+      <NorthStarBadge
+        northStar={{ aspiration: '작가가 되고 싶어요', obligation: '보고서 마감' }}
+      />,
+    )
+    expect(
+      screen.getByRole('group', { name: '열망: 작가가 되고 싶어요 · 의무: 보고서 마감' }),
+    ).toBeInTheDocument()
+  })
+
   it('has no axe violations', async () => {
     const { container } = render(
       <NorthStarBadge northStar={{ aspiration: '건강해지기', obligation: '자격증 따기' }} />,

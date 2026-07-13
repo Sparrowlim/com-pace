@@ -253,14 +253,14 @@ describe('DashboardPage — north star (PH-09 §9)', () => {
       await screen.findByRole('textbox')
 
       expect(screen.queryByRole('button', { name: '북극성 더하기(선택)' })).not.toBeInTheDocument()
-      expect(screen.getByText(/열망:|의무:/)).toBeInTheDocument()
+      expect(screen.getByRole('group', { name: /열망:|의무:/ })).toBeInTheDocument()
     },
   )
 
   test('renders no progress or percentage markup on the badge (SPEC §9 — 진행 측정기 아님)', async () => {
     saveNorthStar({ aspiration: '작가가 되고 싶어요', obligation: '보고서 마감' })
     renderDashboard()
-    const badge = await screen.findByText(/열망:|의무:/)
+    const badge = await screen.findByRole('group', { name: /열망:|의무:/ })
 
     expect(badge.textContent ?? '').not.toMatch(/%/)
     expect(badge.textContent ?? '').not.toMatch(/퍼센트|도달률|진행률/)

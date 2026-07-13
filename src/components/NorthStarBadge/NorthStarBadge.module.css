@@ -1,6 +1,19 @@
-/* PH-09 §9 — 순수 정적 텍스트, 진행 측정 마크업 없음. */
+/* SPEC §9 — 의무·열망 두 좌표를 독립된 칩으로 나란히(D-19, 순위 없음). 진행 측정 마크업
+   없음. Chip.default와 같은 톤(chip-bg/chip-line)이지만 클릭 불가한 <span> — 정보 표시만
+   하고 상호작용 표면으로 오인되지 않게 그림자·hover 상태를 두지 않는다. */
 .northStarBadge {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--chip-line);
+  background-color: var(--chip-bg);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
 }
