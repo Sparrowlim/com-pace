@@ -1,8 +1,11 @@
+/* ADHD 공간 일관성 — 다른 카드-없는 화면(북극성·사전예측·설정·휴식·방전진입)과 동일하게
+   행동 버튼군을 뷰포트 하단에 고정한다(DESIGN-SYSTEM.md §1-1). */
 .page {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-5);
+  min-height: 100svh;
   padding: var(--space-6);
 }
 
@@ -38,6 +41,7 @@
   flex-direction: column;
   gap: var(--space-4);
   width: 100%;
+  margin-top: auto;
 }
 
 /* PH-05.1 — 영점조절 체감 3버튼(D-11) */

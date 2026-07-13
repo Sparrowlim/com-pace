@@ -1,7 +1,10 @@
+/* ADHD 공간 일관성 — 콘텐츠는 항상 위에서 시작하고, 행동 버튼군은 margin-top:auto로 뷰포트
+   하단에 고정한다. 콘텐츠 길이에 따라 버튼 위치가 화면마다 흔들리는 중앙정렬(구 버전)을
+   대체 — "같은 요소는 항상 같은 자리에" 원칙(DESIGN-SYSTEM.md §1-1). 다른 카드-없는 화면
+   (북극성·사전예측·설정·방전진입)과 동일 패턴으로 통일한다. */
 .page {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: var(--space-7);
   min-height: 100svh;
   padding: var(--space-6);
@@ -18,4 +21,5 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  margin-top: auto;
 }

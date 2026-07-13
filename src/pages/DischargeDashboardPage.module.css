@@ -1,8 +1,10 @@
+/* ADHD 공간 일관성 — TaskCard를 쓰는 화면은 카드가 그 자체로 시각적 앵커라 다른 TaskCard
+   화면(온보딩·쪼개기·대시보드)과 같은 상단 정렬을 따른다(가운데 정렬 대체, DESIGN-SYSTEM.md
+   §1-1) — 카드 없는 화면(하단 고정 버튼군)과는 다른 그룹이지만, 그룹 내부에서는 "카드는 항상
+   화면 상단"으로 일관된다. */
 .page {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: var(--space-6);
   min-height: 100svh;
   padding: var(--space-6);
