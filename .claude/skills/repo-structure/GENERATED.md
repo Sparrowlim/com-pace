@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-13T12:36:24.793Z -->
+<!-- 마지막 생성: 2026-07-13T13:19:20.587Z -->
 
 ## src/
 ```
@@ -169,6 +169,7 @@ styles/
 test/
   axe.ts
   setup.ts
+  vercel-config.test.ts
 types/
   block.ts
   energy-cell.ts

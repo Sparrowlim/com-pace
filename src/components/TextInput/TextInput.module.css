@@ -15,6 +15,8 @@
   width: 1px;
   height: 1px;
   padding: 0;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 시각적으로 숨기는
+     표준 a11y 기법의 고정 상수(디자인 토큰 간격이 아님), width/height의 1px과 동일한 성격 */
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);

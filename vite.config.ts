@@ -8,6 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // injectRegister !== 'auto'이면 vite-plugin-pwa가 skipWaiting/clientsClaim을 더 이상
+      // 자동으로 켜주지 않는다 — script-defer로 렌더 블로킹을 없앤 대가로 명시 필요(code review
+      // HIGH: 없으면 이미 열려 있는 탭은 새 SW가 waiting에 머물러 autoUpdate가 죽는다).
+      injectRegister: 'script-defer',
+      workbox: { skipWaiting: true, clientsClaim: true },
       manifest: {
         name: '컴페이스',
         short_name: '컴페이스',
