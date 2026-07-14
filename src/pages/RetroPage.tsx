@@ -7,6 +7,7 @@ import { BonusCard } from '../components/BonusCard'
 import { useAppStore } from '../store'
 import { resolveNextRoute } from '../lib/core-loop-selectors'
 import { todayDateString } from '../lib/time'
+import { isFocusGestureHintShown, markFocusGestureHintShown } from '../lib/focus-gesture-hint'
 import type { TimeSenseFeedback } from '../store/slices/retro-context-slice'
 import type { Block } from '../types/block'
 import { ROUTES } from '../routes/paths'
@@ -75,6 +76,18 @@ function CapturedThoughtCard({
         </Button>
       </div>
     </div>
+  )
+}
+
+// 신규 — 집중 화면(FocusPage)은 탭/롱프레스 제스처에 대한 어떤 힌트도 화면에 두지 않는다
+// (TimerDisplay는 라벨+숫자만, CLAUDE §6 "집중 화면 볼거리 금지" 보호). 대신 그 제스처를 처음
+// 쓸 기회가 생기는 다음 블록을 위해, 이 전환 화면(회고)에서 딱 한 번만 조용히 알려준다
+// (focus-gesture-hint.ts로 최초 1회 여부 판정, 보여준 뒤엔 다시 뜨지 않음).
+function GestureHintCard() {
+  return (
+    <p className={styles.gestureHint}>
+      참고로, 다음 집중 화면에서는 톡 누르면 딴생각을 적어두고 길게 누르면 잠시 멈출 수 있어요.
+    </p>
   )
 }
 
@@ -210,6 +223,18 @@ export default function RetroPage() {
   const navigate = useNavigate()
   useClearRetroContextOnUnmount(setLastResolvedBlock, setCapturedThought, setTimeSenseFeedback)
 
+  // 최초 1회 판정은 마운트 시점 스냅샷으로 고정(block과 동일한 이유) — 렌더 중간에 값이 바뀌어
+  // 카드가 깜빡이며 사라지지 않게 한다. 실제 "봤다" 기록은 effect에서 한 번만 남긴다.
+  // code review 발견 — block이 없어 카드가 실제로 그려지지 않는 렌더(예: /retro 직접 진입)에서도
+  // 훅은 이 return보다 먼저 실행되므로, block도 함께 확인하지 않으면 아무것도 보여주지 못한 채
+  // 최초 1회 플래그만 소모돼버린다.
+  const [showGestureHint] = useState(() => !isFocusGestureHintShown())
+  useEffect(() => {
+    if (showGestureHint && block) {
+      markFocusGestureHintShown()
+    }
+  }, [showGestureHint, block])
+
   if (!block) {
     return <Navigate to={ROUTES.dashboard} replace />
   }
@@ -243,6 +268,7 @@ export default function RetroPage() {
       <StateChip completed={completed} />
       <TimeSenseCalibration value={timeSenseFeedback} onSelect={setTimeSenseFeedback} />
       <BonusCard hit={hit} />
+      {showGestureHint && <GestureHintCard />}
       {capturedThought && <CapturedThoughtCard text={capturedThought} {...thoughtActions} />}
       <EnergyBar filledCount={energyCells.length} justFilledIndex={energyCells.length - 1} />
       <RetroActions

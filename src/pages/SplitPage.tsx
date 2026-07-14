@@ -19,6 +19,12 @@ type FragmentEntryProps = {
 function FragmentEntry({ fragment, onFragmentChange, onPickVerb }: FragmentEntryProps) {
   return (
     <>
+      {/* Phase 1(B1) — 쪼개기 메커니즘(입력→동사칩 조합) 자체를 설명하는 카피가 화면에 전혀
+          없어 온보딩 직후 첫 실제 UI에서 이게 뭐지 병목이 됐다(2026-07-14 디자인 개편). 새 판단을
+          요구하지 않는 순수 설명 한 줄만 추가한다. */}
+      <p className={styles.guide}>
+        조각을 적고, 어떤 동작인지 칩을 하나 골라 붙이면 15분 조각이 만들어져요
+      </p>
       <div className={styles.fragmentInput}>
         <TextInput value={fragment} onChange={onFragmentChange} label="과제 조각" hideLabel />
       </div>

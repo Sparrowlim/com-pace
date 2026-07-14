@@ -5,6 +5,12 @@
   padding: var(--space-6);
 }
 
+.guide {
+  margin: 0 0 var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
 .fragmentInput {
   margin-bottom: var(--space-5);
 }

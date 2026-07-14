@@ -58,7 +58,9 @@ function AddTaskPrompt({ draftTitle, onDraftChange, onSubmit }: AddTaskPromptPro
   return (
     <>
       <p className={styles.prompt}>지금 눈에 걸리는 아무거나, 사소해도 괜찮아요</p>
-      <TextInput value={draftTitle} onChange={onDraftChange} />
+      {/* Phase 1(B4) — 이 입력창은 label을 아예 안 넘겨 접근 가능한 이름이 없었다(SplitPage의
+          FragmentEntry가 이미 쓰는 hideLabel 패턴과 동일하게 맞춘다, 2026-07-14 디자인 개편). */}
+      <TextInput value={draftTitle} onChange={onDraftChange} label="오늘 할 일" hideLabel />
       <Button variant="primary" disabled={!draftTitle.trim()} onClick={onSubmit}>
         다음
       </Button>

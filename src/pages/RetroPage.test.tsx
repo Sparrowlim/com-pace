@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import RetroPage from './RetroPage'
 import { useAppStore } from '../store'
+import { isFocusGestureHintShown, markFocusGestureHintShown } from '../lib/focus-gesture-hint'
 import { ROUTES } from '../routes/paths'
 import type { Block } from '../types/block'
 
@@ -35,6 +36,10 @@ function makeBlock(overrides: Partial<Block> = {}): Block {
 }
 
 beforeEach(() => {
+  localStorage.clear()
+  // 기본값 = 힌트를 이미 본 상태(정상 루프의 대다수 방문). 최초 1회 노출 시나리오는
+  // 아래 전용 describe 블록에서 localStorage.clear()로 다시 뒤집는다.
+  markFocusGestureHintShown()
   useAppStore.setState({
     tasks: [],
     queuedBlocks: [],
@@ -462,5 +467,57 @@ describe('RetroPage — guardrails', () => {
     renderRetroPage()
 
     expect(await screen.findByRole('group', { name: '오늘 1칸' })).toBeInTheDocument()
+  })
+})
+
+describe('RetroPage — 집중 화면 제스처 최초 1회 힌트 (B2)', () => {
+  beforeEach(() => {
+    // 바깥 beforeEach가 이미 "봤음"으로 마크해둔 것을 다시 뒤집어 최초 방문을 재현한다.
+    localStorage.clear()
+  })
+
+  test('shows the hint on the very first retro visit ever', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    expect(
+      await screen.findByText(
+        '참고로, 다음 집중 화면에서는 톡 누르면 딴생각을 적어두고 길게 누르면 잠시 멈출 수 있어요.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  test('shows the hint for an incomplete block too (neutral info, not tied to outcome)', async () => {
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'incomplete' }) })
+    renderRetroPage()
+
+    expect(
+      await screen.findByText(
+        '참고로, 다음 집중 화면에서는 톡 누르면 딴생각을 적어두고 길게 누르면 잠시 멈출 수 있어요.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  test('does not show the hint once it has already been marked as seen', async () => {
+    markFocusGestureHintShown()
+    useAppStore.setState({ lastResolvedBlock: makeBlock({ status: 'done' }) })
+    renderRetroPage()
+
+    await screen.findByText('15분, 오늘도 해냈어요.')
+    expect(
+      screen.queryByText(
+        '참고로, 다음 집중 화면에서는 톡 누르면 딴생각을 적어두고 길게 누르면 잠시 멈출 수 있어요.',
+      ),
+    ).not.toBeInTheDocument()
+  })
+
+  // code review 발견 — 마킹 effect가 !block 가드보다 먼저 선언돼 있어, block이 없어 카드가 실제로
+  // 그려지지 않는 렌더(예: /retro 직접 진입)에서도 최초 1회 플래그가 조용히 소모될 뻔했다.
+  test('redirecting with no resolved block does not consume the one-time flag', async () => {
+    useAppStore.setState({ lastResolvedBlock: null })
+    renderRetroPage()
+
+    await screen.findByText('DASHBOARD_STUB')
+    expect(isFocusGestureHintShown()).toBe(false)
   })
 })

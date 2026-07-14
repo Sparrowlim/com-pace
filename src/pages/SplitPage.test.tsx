@@ -37,6 +37,17 @@ describe('SplitPage', () => {
     expect(await screen.findByText('청소')).toBeInTheDocument()
   })
 
+  test('explains the fragment-plus-verb-chip mechanism (Phase 1, B1 — no copy existed before)', async () => {
+    await useAppStore.getState().addTask('청소')
+    renderSplitPage()
+
+    expect(
+      await screen.findByText(
+        '조각을 적고, 어떤 동작인지 칩을 하나 골라 붙이면 15분 조각이 만들어져요',
+      ),
+    ).toBeInTheDocument()
+  })
+
   test('adds a draft block combining the fragment text and a verb chip', async () => {
     const user = userEvent.setup()
     await useAppStore.getState().addTask('청소')

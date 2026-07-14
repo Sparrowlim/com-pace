@@ -8,6 +8,7 @@ import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
 import { markOnboardingComplete } from '../lib/onboarding-status'
 import { saveNorthStar } from '../lib/north-star-storage'
+import { runAxe } from '../test/axe'
 
 function renderDashboard() {
   const router = createMemoryRouter(
@@ -23,7 +24,7 @@ function renderDashboard() {
     ],
     { initialEntries: [ROUTES.dashboard] },
   )
-  render(<RouterProvider router={router} />)
+  return render(<RouterProvider router={router} />)
 }
 
 beforeEach(() => {
@@ -54,6 +55,19 @@ describe('DashboardPage — no active task', () => {
 
     expect(await screen.findByRole('textbox')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '다음' })).toBeDisabled()
+  })
+
+  test('the add-task input has an accessible name (Phase 1, B4 — no label was passed before)', async () => {
+    renderDashboard()
+
+    expect(await screen.findByRole('textbox', { name: '오늘 할 일' })).toBeInTheDocument()
+  })
+
+  test('has no axe violations', async () => {
+    const { container } = renderDashboard()
+    await screen.findByRole('textbox')
+
+    expect((await runAxe(container)).violations).toHaveLength(0)
   })
 
   test('adding a task navigates to split', async () => {

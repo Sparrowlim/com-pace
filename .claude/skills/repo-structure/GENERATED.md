@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-13T13:19:20.587Z -->
+<!-- 마지막 생성: 2026-07-14T04:09:02.789Z -->
 
 ## src/
 ```
@@ -80,6 +80,8 @@ lib/
   core-loop-selectors.ts
   discharge-block-pointer.test.ts
   discharge-block-pointer.ts
+  focus-gesture-hint.test.ts
+  focus-gesture-hint.ts
   id.test.ts
   id.ts
   north-star-selectors.test.ts

@@ -59,6 +59,18 @@
   background-color: var(--surface-raised);
 }
 
+/* 신규 — 집중 화면 제스처 최초 1회 힌트. 축하(bonus)도 경고도 아닌 중립 정보라
+   captureCard와 같은 surface 톤을 쓰고, 별도 테두리·강조색은 두지 않는다. */
+.gestureHint {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
 .captureText {
   margin: 0 0 var(--space-4);
   color: var(--text-secondary);
