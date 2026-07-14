@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import FocusPage from './FocusPage'
+import { DISCHARGE_END_MESSAGE } from '../hooks/useFocusTimer'
 import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
+import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
 
 function renderFocusPage() {
   const router = createMemoryRouter(
@@ -24,6 +26,24 @@ async function seedActiveBlockWithPrediction() {
   const block = await useAppStore.getState().startBlock(task.id, '책상 정리하기')
   await useAppStore.getState().setPrediction(block.id, true)
   return { task, block }
+}
+
+// PH-12 5-C 테스트 공용 — 900초 시점으로 점프해 한 번 tick한다(SPEC §6/P13, 900번 tick 불필요).
+function jumpToElapsed(now: Date) {
+  vi.setSystemTime(new Date(now.getTime() + 900_000))
+  act(() => {
+    useAppStore.getState().tick()
+  })
+}
+
+async function seedElapsedFocusBlock() {
+  const now = new Date('2026-07-07T10:00:00.000Z')
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(now)
+  const { block } = await seedActiveBlockWithPrediction()
+  renderFocusPage()
+  jumpToElapsed(now)
+  return { block }
 }
 
 beforeEach(() => {
@@ -89,28 +109,103 @@ describe('FocusPage — countdown', () => {
 
     expect(useAppStore.getState().elapsedSeconds).toBeGreaterThanOrEqual(1)
   })
+})
 
-  test('auto-finishes at 900 seconds: completes, resolves the prediction, lights energy, and goes to retro', async () => {
-    const now = new Date('2026-07-07T10:00:00.000Z')
-    vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime(now)
-    const { block } = await seedActiveBlockWithPrediction()
-    renderFocusPage()
-    expect(screen.getByText('15:00')).toBeInTheDocument()
+// PH-12 — 15분 자연 경과는 더 이상 시스템이 완료로 추정하지 않는다(SPEC §6 신설 행). 에너지는
+// 즉시 점등되지만 완료/이어가기 라벨은 5-C 시트에서 사용자가 고른다.
+describe('FocusPage — 5-C 조각 마무리 선택 (SPEC §6, 15분 자연 경과)', () => {
+  test('at 900 seconds: lights energy immediately but shows the 5-C wrap-up sheet instead of auto-completing', async () => {
+    const { block } = await seedElapsedFocusBlock()
 
-    // Jump straight past the 900s threshold and tick once — timestamp-based recomputation
-    // (SPEC §6/P13) means a single tick after the gap is enough, no need to call tick() 900 times.
-    vi.setSystemTime(new Date(now.getTime() + 900_000))
-    act(() => {
-      useAppStore.getState().tick()
+    expect(await screen.findByRole('button', { name: '이 조각 끝났어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '아직 남았어요' })).toBeInTheDocument()
+    expect(screen.queryByText('RETRO_STUB')).not.toBeInTheDocument()
+    // ensureEnergyLit's IndexedDB write is fire-and-forget from the effect, so give it a real
+    // beat to land before asserting — the button's own appearance doesn't gate on it.
+    await waitFor(() => {
+      expect(useAppStore.getState().energyCells.some((cell) => cell.blockId === block.id)).toBe(
+        true,
+      )
     })
+    expect(useAppStore.getState().activeBlock).not.toBeNull()
+    expect(useAppStore.getState().lastResolvedBlock).toBeNull()
+  })
+
+  test('choosing "이 조각 끝났어요" completes the block and goes to retro with a single energy light', async () => {
+    const { block } = await seedElapsedFocusBlock()
+    vi.useRealTimers()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '이 조각 끝났어요' }))
 
     expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
     const state = useAppStore.getState()
     expect(state.activeBlock).toBeNull()
     expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'done' })
     expect(state.predictions.find((p) => p.blockId === block.id)?.actual).toBe(true)
-    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
+  })
+
+  test('choosing "아직 남았어요" marks the block incomplete and goes to retro with a single energy light', async () => {
+    const { block } = await seedElapsedFocusBlock()
+    vi.useRealTimers()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: '아직 남았어요' }))
+
+    expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.activeBlock).toBeNull()
+    expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
+    expect(state.predictions.find((p) => p.blockId === block.id)?.actual).toBe(false)
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
+  })
+})
+
+describe('FocusPage — 5-C 가드레일 (방전 우회·제스처 잠금·무처벌 카피)', () => {
+  test('discharge blocks bypass 5-C entirely and auto-complete at 900 seconds as before', async () => {
+    const now = new Date('2026-07-07T10:00:00.000Z')
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
+    useAppStore.setState({ dischargeMode: true })
+    const task = await useAppStore.getState().addTask('청소')
+    const block = await useAppStore.getState().startBlock(task.id, '책상 정리하기')
+    dischargeBlockPointer.set(block.id)
+    // 방전 대시보드가 시작 시점에 이미 점등했던 그 칸을 흉내낸다 — 900초 자동 종료가 이를 다시
+    // 점등하면 안 된다(정확히 1회 점등 불변식, useSessionRecovery.test.tsx 선례와 동일 패턴).
+    await useAppStore.getState().lightEnergyCell(block.id, todayDateString())
+    renderFocusPage()
+    jumpToElapsed(now)
+
+    expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '이 조각 끝났어요' })).not.toBeInTheDocument()
+    const state = useAppStore.getState()
+    expect(state.activeBlock).toBeNull()
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
+    expect(state.dischargeMode).toBe(false)
+    expect(state.dischargeEndMessage).toBe(DISCHARGE_END_MESSAGE)
+    expect(state.lastResolvedBlock).toBeNull()
+  })
+
+  test('during the 5-C wrap-up window, taps and long-presses are ignored (no capture modal, no pause)', async () => {
+    await seedElapsedFocusBlock()
+    vi.useRealTimers()
+    const user = userEvent.setup()
+    await screen.findByRole('button', { name: '이 조각 끝났어요' })
+
+    await user.click(screen.getByText('책상 정리하기'))
+
+    expect(screen.queryByRole('dialog', { name: '딴생각 포착' })).not.toBeInTheDocument()
+    expect(screen.queryByText('잠시 멈췄어요')).not.toBeInTheDocument()
+    expect(useAppStore.getState().activeBlock?.status).not.toBe('paused')
+  })
+
+  test('no danger/error/warning/fail styling classes render during the 5-C wrap-up window', async () => {
+    await seedElapsedFocusBlock()
+
+    await screen.findByRole('button', { name: '이 조각 끝났어요' })
+
+    expect(document.body.innerHTML).not.toMatch(/class="[^"]*\b(danger|error|warning|fail)\b/i)
   })
 })
 
@@ -171,7 +266,9 @@ describe('FocusPage — pause (SPEC §6 5-B, long-press only)', () => {
     const state = useAppStore.getState()
     expect(state.activeBlock).toBeNull()
     expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
-    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+    // PH-12 — energy lighting moved off finishNormalPath onto ensureEnergyLit; the early-quit
+    // path must still light exactly once, not zero times or twice.
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
   })
 
   test('there is no direct quit button on the running countdown screen', async () => {
@@ -240,7 +337,7 @@ describe('FocusPage — give up via pause', () => {
     expect(state.activeBlock).toBeNull()
     expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
     expect(state.predictions.find((p) => p.blockId === block.id)).toBeUndefined()
-    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
+    expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
   })
 })
 

@@ -60,9 +60,10 @@ describe('core loop integration (real routes, fixture-seeded task)', () => {
     // 예측: 완료 예측
     await user.click(await screen.findByRole('button', { name: '끝날 것 같아요' }))
 
-    // 집중: 15분 경과를 직접 구동(체감 대기 없이)
+    // 집중: 15분 경과를 직접 구동(체감 대기 없이) → PH-12 5-C: 완료 여부는 사용자가 고른다
     await screen.findByText('15:00')
     advance15MinutesAndTick()
+    await user.click(await screen.findByRole('button', { name: '이 조각 끝났어요' }))
 
     // 회고: 완료 + 적중 → 보너스, 다음 블록으로
     await screen.findByText('예측이 딱 맞았어요.')
@@ -72,6 +73,7 @@ describe('core loop integration (real routes, fixture-seeded task)', () => {
     await user.click(await screen.findByRole('button', { name: '더 걸릴 것 같아요' }))
     await screen.findByText('15:00')
     advance15MinutesAndTick()
+    await user.click(await screen.findByRole('button', { name: '이 조각 끝났어요' }))
 
     // 회고: 완료 + 빗나감 → 보너스 없음, 완료 화면과 동일한 문구
     await screen.findByText('15분, 오늘도 해냈어요.')

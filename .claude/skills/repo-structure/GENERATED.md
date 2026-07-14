@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-14T04:09:02.789Z -->
+<!-- 마지막 생성: 2026-07-14T13:38:53.121Z -->
 
 ## src/
 ```
@@ -216,5 +216,6 @@ phases/
   PH-09-settings-northstar.md
   PH-10-telemetry.md
   PH-11-pwa-deploy.md
+  PH-12-fragment-wrapup.md
   README.md
 ```
