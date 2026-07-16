@@ -62,4 +62,8 @@ describe('TextInput', () => {
   it('transitions the border to action-ink on focus without changing the background (PH-04.4 1-1)', () => {
     expect(css).toMatch(/\.input:focus-visible\s*\{[^}]*border-color:\s*var\(--action-ink\)/)
   })
+
+  it('uses a 16px font-size so focusing the input does not trigger iOS Safari/Chrome auto-zoom', () => {
+    expect(css).toMatch(/\.input\s*\{[^}]*font-size:\s*var\(--font-size-lg\)/)
+  })
 })

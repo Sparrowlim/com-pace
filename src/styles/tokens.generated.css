@@ -7,10 +7,10 @@
 :root {
   --font-family-serif: 'Gowun Batang', serif;
   --font-family-sans: 'Gowun Dodum', system-ui, sans-serif;
-  --font-size-xs: 0.6875rem;
-  --font-size-sm: 0.75rem;
-  --font-size-base: 0.8125rem;
-  --font-size-md: 0.875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-base: 0.875rem;
+  --font-size-md: 0.9375rem;
   --font-size-lg: 1rem;
   --font-size-xl: 1.1875rem;
   --font-size-2xl: 1.375rem;
