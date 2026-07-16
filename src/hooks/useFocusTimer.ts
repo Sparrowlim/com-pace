@@ -3,6 +3,7 @@ import { useAppStore } from '../store'
 import { nowIso, todayDateString } from '../lib/time'
 import { FOCUS_SECONDS } from '../lib/session-timer'
 import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
+import { notifySessionComplete } from '../lib/session-alarm'
 import type { Block } from '../types/block'
 
 export { FOCUS_SECONDS }
@@ -85,6 +86,17 @@ function useEnsureEnergyLit() {
   }
 }
 
+// 블록별 1회 알림 가드 — energyLitRef와 동일한 패턴. detectWrapUp은 5-C 대기 중 매 tick(1초)마다
+// 재호출되므로 가드가 없으면 사용자가 시트에서 고르기 전까지 매초 알림/차임이 반복된다.
+function useNotifyOnce() {
+  const notifiedRef = useRef<string | null>(null)
+  return (blockId: string) => {
+    if (notifiedRef.current === blockId) return
+    notifiedRef.current = blockId
+    notifySessionComplete()
+  }
+}
+
 // code review CRITICAL fix — "was this discharge" is answered by tagging the specific block via a
 // persisted pointer, not by reading the ambient dischargeMode flag. dischargeMode can outlive the
 // discharge screens themselves (back button / away navigation before a block is even started), so
@@ -131,10 +143,12 @@ function detectWrapUp(
   finish: (completed: boolean) => Promise<void>,
   ensureEnergyLit: (blockId: string) => Promise<void>,
   setAwaitingWrapUp: (value: boolean) => void,
+  notifyOnce: (blockId: string) => void,
 ): void {
   if (elapsedSeconds < FOCUS_SECONDS) return
   const block = useAppStore.getState().activeBlock
   if (!block) return
+  notifyOnce(block.id)
   if (dischargeBlockPointer.get() === block.id) {
     void finish(true)
     return
@@ -158,6 +172,7 @@ export function useFocusTimer(onFinished: (wasDischarge: boolean) => void) {
   const { tick } = actions
   const finishedRef = useRef(false)
   const ensureEnergyLit = useEnsureEnergyLit()
+  const notifyOnce = useNotifyOnce()
   const [awaitingWrapUp, setAwaitingWrapUp] = useState(false)
 
   useEffect(() => {
@@ -176,7 +191,7 @@ export function useFocusTimer(onFinished: (wasDischarge: boolean) => void) {
   }
 
   useEffect(() => {
-    detectWrapUp(elapsedSeconds, finish, ensureEnergyLit, setAwaitingWrapUp)
+    detectWrapUp(elapsedSeconds, finish, ensureEnergyLit, setAwaitingWrapUp, notifyOnce)
     // finish/ensureEnergyLit은 매 렌더 새로 만들어지지만 내부적으로 getState() 스냅샷만 참조하므로
     // deps에선 제외한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -8,6 +8,7 @@ import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
 import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
+import * as sessionAlarm from '../lib/session-alarm'
 
 function renderFocusPage() {
   const router = createMemoryRouter(
@@ -159,6 +160,50 @@ describe('FocusPage — 5-C 조각 마무리 선택 (SPEC §6, 15분 자연 경�
     expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'incomplete' })
     expect(state.predictions.find((p) => p.blockId === block.id)?.actual).toBe(false)
     expect(state.energyCells.filter((cell) => cell.blockId === block.id)).toHaveLength(1)
+  })
+})
+
+describe('FocusPage — 완료 알람(session-alarm)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('fires the completion alarm exactly once, even while the 5-C sheet waits across several ticks', async () => {
+    const notifySpy = vi.spyOn(sessionAlarm, 'notifySessionComplete')
+    const now = new Date('2026-07-07T10:00:00.000Z')
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    jumpToElapsed(now)
+    await screen.findByRole('button', { name: '이 조각 끝났어요' })
+
+    // 사용자가 5-C 시트에서 고르기 전까지 몇 초 더 지나도(매초 tick) 중복 발화하면 안 된다.
+    for (let i = 0; i < 3; i += 1) {
+      vi.setSystemTime(new Date(now.getTime() + 900_000 + (i + 1) * 1000))
+      act(() => {
+        useAppStore.getState().tick()
+      })
+    }
+
+    expect(notifySpy).toHaveBeenCalledTimes(1)
+  })
+
+  test('fires the completion alarm once for discharge blocks too', async () => {
+    const notifySpy = vi.spyOn(sessionAlarm, 'notifySessionComplete')
+    const now = new Date('2026-07-07T10:00:00.000Z')
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
+    useAppStore.setState({ dischargeMode: true })
+    const task = await useAppStore.getState().addTask('청소')
+    const block = await useAppStore.getState().startBlock(task.id, '책상 정리하기')
+    dischargeBlockPointer.set(block.id)
+    await useAppStore.getState().lightEnergyCell(block.id, todayDateString())
+    renderFocusPage()
+    jumpToElapsed(now)
+
+    await screen.findByText('DASHBOARD_STUB')
+    expect(notifySpy).toHaveBeenCalledTimes(1)
   })
 })
 
