@@ -6,6 +6,7 @@ import { NorthStarBadge } from '../components/NorthStarBadge'
 import { getNorthStar } from '../lib/north-star-storage'
 import { hasNorthStar } from '../lib/north-star-selectors'
 import { isNotificationOptIn, setNotificationOptIn } from '../lib/notification-pref'
+import { requestNotificationPermission } from '../lib/session-alarm'
 import type { NorthStar } from '../types/north-star'
 import { ROUTES } from '../routes/paths'
 import styles from './SettingsPage.module.css'
@@ -25,6 +26,11 @@ export default function SettingsPage() {
   const handleSelectNotification = (value: boolean) => {
     setNotificationOptIn(value)
     setLocalNotificationOptIn(value)
+    // 권한 프롬프트는 여기(사용자가 이미 켜기로 결정한 순간)에서만 띄운다 — 타이머 도중이 아니라
+    // 결정 피로 차단(CLAUDE §2)을 지키는 유일한 지점.
+    if (value) {
+      void requestNotificationPermission()
+    }
   }
 
   return (

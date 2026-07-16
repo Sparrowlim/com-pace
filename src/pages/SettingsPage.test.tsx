@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -6,6 +6,7 @@ import SettingsPage from './SettingsPage'
 import { ROUTES } from '../routes/paths'
 import { saveNorthStar } from '../lib/north-star-storage'
 import { isNotificationOptIn, setNotificationOptIn } from '../lib/notification-pref'
+import * as sessionAlarm from '../lib/session-alarm'
 
 function renderSettings() {
   const router = createMemoryRouter(
@@ -21,6 +22,10 @@ function renderSettings() {
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('SettingsPage — north star summary', () => {
@@ -111,6 +116,22 @@ describe('SettingsPage — notification preference', () => {
     expect(bodyText).not.toMatch(/안 오셨/)
     expect(bodyText).not.toMatch(/째\s*안/)
     expect(bodyText).not.toMatch(/확인해/)
+  })
+})
+
+describe('SettingsPage — notification permission request', () => {
+  test('requests browser notification permission only when turning the option on', async () => {
+    const requestPermissionSpy = vi
+      .spyOn(sessionAlarm, 'requestNotificationPermission')
+      .mockResolvedValue(true)
+    const user = userEvent.setup()
+    renderSettings()
+
+    await user.click(await screen.findByRole('button', { name: '켜볼게요' }))
+    expect(requestPermissionSpy).toHaveBeenCalledTimes(1)
+
+    await user.click(await screen.findByRole('button', { name: '꺼둘게요' }))
+    expect(requestPermissionSpy).toHaveBeenCalledTimes(1)
   })
 })
 
