@@ -134,17 +134,17 @@ color.energy.fill #E79B62    evidence.fill  ← 신성불가침    (action·evid
 
 **폰트 크기 (와이어 24스텝 → 9스텝 수렴, base 16px)**
 
-| 토큰              | rem / px         | 용도               |
-| ----------------- | ---------------- | ------------------ |
-| `font.size.xs`    | `0.6875rem` / 11 | 힌트·조용한 메타   |
-| `font.size.sm`    | `0.75rem` / 12   | 라벨               |
-| `font.size.base`  | `0.8125rem` / 13 | 보조 본문          |
-| `font.size.md`    | `0.875rem` / 14  | 본문·입력          |
-| `font.size.lg`    | `1rem` / 16      | 버튼               |
-| `font.size.xl`    | `1.1875rem` / 19 | 카드 제목(소)      |
-| `font.size.2xl`   | `1.375rem` / 22  | 카드 제목          |
-| `font.size.3xl`   | `1.5rem` / 24    | 온보딩 헤드라인    |
-| `font.size.timer` | `6rem` / 96      | 집중 타이머(serif) |
+| 토큰              | rem / px         | 용도                               |
+| ----------------- | ---------------- | ---------------------------------- |
+| `font.size.xs`    | `0.75rem` / 12   | 힌트·조용한 메타                   |
+| `font.size.sm`    | `0.8125rem` / 13 | 라벨                               |
+| `font.size.base`  | `0.875rem` / 14  | 보조 본문                          |
+| `font.size.md`    | `0.9375rem` / 15 | 본문                               |
+| `font.size.lg`    | `1rem` / 16      | 버튼·입력(모바일 확대 방지 임계값) |
+| `font.size.xl`    | `1.1875rem` / 19 | 카드 제목(소)                      |
+| `font.size.2xl`   | `1.375rem` / 22  | 카드 제목                          |
+| `font.size.3xl`   | `1.5rem` / 24    | 온보딩 헤드라인                    |
+| `font.size.timer` | `6rem` / 96      | 집중 타이머(serif)                 |
 
 **라운드**
 
@@ -417,10 +417,10 @@ color.energy.fill #E79B62    evidence.fill  ← 신성불가침    (action·evid
     },
     "size": {
       "$type": "dimension",
-      "xs": { "$value": "0.6875rem" },
-      "sm": { "$value": "0.75rem" },
-      "base": { "$value": "0.8125rem" },
-      "md": { "$value": "0.875rem" },
+      "xs": { "$value": "0.75rem" },
+      "sm": { "$value": "0.8125rem" },
+      "base": { "$value": "0.875rem" },
+      "md": { "$value": "0.9375rem" },
       "lg": { "$value": "1rem" },
       "xl": { "$value": "1.1875rem" },
       "2xl": { "$value": "1.375rem" },
@@ -600,6 +600,7 @@ color.energy.fill #E79B62    evidence.fill  ← 신성불가침    (action·evid
 
 ## Changelog
 
+- **v0.6** — 모바일 실사용 버그 2건 수정. (1) `font.size.md`(입력 필드가 참조하던 토큰)가 14px로 iOS Safari/Chrome의 "포커스 시 자동 확대" 임계값(16px) 미만이라 입력 시 화면이 확대되는 문제 발견 — `TextInput.module.css`가 입력 필드에 한해 이미 존재하는 `font.size.lg`(16px, 버튼용)를 재사용하도록 변경(신규 토큰 생성 없음, §9 값 무변경). (2) 모바일에서 전반적으로 글자가 작다는 피드백에 따라 `font.size.xs/sm/base/md` 4단계를 각 1px씩 상향(11/12/13/14 → 12/13/14/15). `lg` 이상은 이미 16px 이상이라 변경 없음. WCAG 대비(§10-3)는 색상 문제라 폰트 크기 변경과 무관, 영향 없음.
 - **v0.5** — `PH-04.2` 완료로 §10-6 항목 6("컴포넌트 토큰(다음 단계)")을 [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) 링크로 교체(여백 리듬·타이포 위계·elevation 서열·모션 일관성 표 신설, 토큰 값 자체는 무변경).
 - **v0.4** — PH-04 `Chip` 프리미티브 구현 중 발견: `color.chip.bg`/`color.chip.line`(§2-4)가 primitive로만 존재하고 semantic 승격이 누락돼 있었음(§3에 행 없음) — CSS 파이프라인이 semantic 계층만 노출하므로 이 상태로는 Chip이 자기 색을 참조할 방법이 없었다. `chip.bg`/`chip.line` semantic을 §3·§9에 추가(값 변경 없음, 순수 승격). 동시에 `semantic.action`을 DTCG 규격 위반(한 노드가 `$value`와 자식 토큰을 동시에 가짐) 수정 위해 `action.DEFAULT`로 재구조화(§8에 근거 기록).
 - **v0.3** — PH-04 착수 전 WCAG 실측(§10-3 예비 조항 이행). `action.text`를 `color.accent.on`→`color.ink.900`로 재매핑(CTA 텍스트 대비 2.31:1→4.72:1, 배경 `action` 불변). `evidence.fill` 비텍스트 대비 미달(1.70~2.01:1 vs ≥3:1) 발견 — 브랜드 상징색이라 임의 수정하지 않고 §10-4에 미해결 기록, PH-04 자동화 검증에서 "기록"으로만 표시.

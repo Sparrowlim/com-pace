@@ -25,6 +25,8 @@
 }
 
 /* PH-04.4 1-1 — surface.raised+border.default 무테두리 근접, 단일 상태 */
+/* font-size는 16px(font-size-lg) 미만이면 iOS Safari/Chrome이 포커스 시 자동 확대한다 —
+   버튼용 토큰이지만 줌 방지 임계값이라 그대로 재사용(신규 토큰 생성 안 함). */
 .input {
   box-sizing: border-box;
   width: 100%;
@@ -35,7 +37,7 @@
   background-color: var(--surface-raised);
   color: var(--text-primary);
   font-family: var(--font-family-sans);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   transition: border-color var(--duration-fast) var(--easing-quiet);
 }
 
