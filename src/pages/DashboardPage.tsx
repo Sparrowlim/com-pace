@@ -37,7 +37,6 @@ function TimerInProgressCard({ onReturn }: { onReturn: () => void }) {
 type AddTaskPromptProps = {
   draftTitle: string
   onDraftChange: (value: string) => void
-  onSubmit: () => void
 }
 
 // RetroPage의 makeThoughtActions와 동일한 팩토리 패턴 — 컴포넌트 밖으로 빼 본체를 얇게 유지한다.
@@ -54,16 +53,15 @@ function createAddTaskHandler(
   }
 }
 
-function AddTaskPrompt({ draftTitle, onDraftChange, onSubmit }: AddTaskPromptProps) {
+// CMP-2/CMP-5 — 주 행동 버튼(다음)은 이 초점 콘텐츠가 아니라 앵커존(DashboardPage 하단)에
+// 렌더한다. 여기 두면 입력창 바로 밑에 붙어 화면 하단이 텅 비는 바벨 공허가 된다(구 배치).
+function AddTaskPrompt({ draftTitle, onDraftChange }: AddTaskPromptProps) {
   return (
     <>
       <p className={styles.prompt}>지금 눈에 걸리는 아무거나, 사소해도 괜찮아요</p>
       {/* Phase 1(B4) — 이 입력창은 label을 아예 안 넘겨 접근 가능한 이름이 없었다(SplitPage의
           FragmentEntry가 이미 쓰는 hideLabel 패턴과 동일하게 맞춘다, 2026-07-14 디자인 개편). */}
       <TextInput value={draftTitle} onChange={onDraftChange} label="오늘 할 일" hideLabel />
-      <Button variant="primary" disabled={!draftTitle.trim()} onClick={onSubmit}>
-        다음
-      </Button>
     </>
   )
 }
@@ -165,7 +163,6 @@ type ActiveTaskSectionProps = {
   fragmentOptions: QueuedBlock[]
   draftTitle: string
   onDraftChange: (value: string) => void
-  onSubmitDraft: () => void
   onReturnToFocus: () => void
   onGoSplit: () => void
   onGoPredict: () => void
@@ -181,7 +178,6 @@ function ActiveTaskSection({
   fragmentOptions,
   draftTitle,
   onDraftChange,
-  onSubmitDraft,
   onReturnToFocus,
   onGoSplit,
   onGoPredict,
@@ -191,13 +187,7 @@ function ActiveTaskSection({
     return <TimerInProgressCard onReturn={onReturnToFocus} />
   }
   if (!task) {
-    return (
-      <AddTaskPrompt
-        draftTitle={draftTitle}
-        onDraftChange={onDraftChange}
-        onSubmit={onSubmitDraft}
-      />
-    )
+    return <AddTaskPrompt draftTitle={draftTitle} onDraftChange={onDraftChange} />
   }
   if (!task.splitDone) {
     return <TaskCta title={task.title} ctaLabel="쪼개러 가기" onClick={onGoSplit} />
@@ -265,28 +255,40 @@ export default function DashboardPage() {
   // 노출한다(과제 소진·타이머 진행 중엔 방전으로 갈 대상이 없음).
   const canEnterDischarge = !activeBlock && !!task && task.splitDone && !!next
 
+  // CMP-2/CMP-5 — 아무거나 입력 상태(과제 없음·타이머 없음)의 주 행동 버튼은 앵커존에 둔다.
+  // 입력창 바로 밑이 아니라 뷰포트 하단에 고정해 화면이 바벨 공허로 비지 않게 한다.
+  const showAddTaskAction = !activeBlock && !task
+
   return (
     <div className={styles.page}>
       {dischargeEndMessage && <DischargeEndBanner message={dischargeEndMessage} />}
       <DashboardHeader northStar={getNorthStar()} navigate={navigate} />
-      <ActiveTaskSection
-        hasActiveBlock={!!activeBlock}
-        task={task}
-        next={next}
-        fragmentOptions={fragmentOptions}
-        draftTitle={draftTitle}
-        onDraftChange={setDraftTitle}
-        onSubmitDraft={handleAddTask}
-        onReturnToFocus={() => navigate(ROUTES.focus)}
-        onGoSplit={() => navigate(ROUTES.split)}
-        onGoPredict={() => navigate(ROUTES.predict)}
-        onChooseFragment={(blockId) => {
-          if (!task) return
-          promoteQueuedBlock(task.id, blockId)
-          navigate(ROUTES.predict)
-        }}
-      />
+      {/* 초점존(CMP-3) — 헤더 바로 밑 밀착 대신 초점 밴드에 놓아 콘텐츠에 presence를 준다. */}
+      <div className={styles.focal}>
+        <ActiveTaskSection
+          hasActiveBlock={!!activeBlock}
+          task={task}
+          next={next}
+          fragmentOptions={fragmentOptions}
+          draftTitle={draftTitle}
+          onDraftChange={setDraftTitle}
+          onReturnToFocus={() => navigate(ROUTES.focus)}
+          onGoSplit={() => navigate(ROUTES.split)}
+          onGoPredict={() => navigate(ROUTES.predict)}
+          onChooseFragment={(blockId) => {
+            if (!task) return
+            promoteQueuedBlock(task.id, blockId)
+            navigate(ROUTES.predict)
+          }}
+        />
+      </div>
+      {/* 앵커존(CMP-2) — 상태와 무관하게 뷰포트 하단 고정. 주 행동/방전 링크/그날의 증거. */}
       <div className={styles.bottomGroup}>
+        {showAddTaskAction && (
+          <Button variant="primary" disabled={!draftTitle.trim()} onClick={handleAddTask}>
+            다음
+          </Button>
+        )}
         {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}
         <EnergyBar filledCount={energyCells.length} />
       </div>

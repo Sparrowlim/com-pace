@@ -15,6 +15,9 @@ const DischargeDashboardPage = lazy(() => import('../pages/DischargeDashboardPag
 const SettingsPage = lazy(() => import('../pages/SettingsPage'))
 const NorthStarPage = lazy(() => import('../pages/NorthStarPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+// dev/QA 전용 디자인 시스템 갤러리 — 앱 내비게이션에서 링크되지 않는 lazy 라우트(별도 청크라
+// 메인 번들 예산 무영향, 페르소나 K는 도달 경로 없음). 상세: docs/design-system/README-gallery.md
+const StyleGuidePage = lazy(() => import('../styleguide/StyleGuidePage'))
 
 export const routeObjects: RouteObject[] = [
   {
@@ -31,6 +34,7 @@ export const routeObjects: RouteObject[] = [
       { path: ROUTES.dischargeDashboard, element: <DischargeDashboardPage /> },
       { path: ROUTES.settings, element: <SettingsPage /> },
       { path: ROUTES.northStar, element: <NorthStarPage /> },
+      { path: '/styleguide', element: <StyleGuidePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

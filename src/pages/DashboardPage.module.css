@@ -9,6 +9,16 @@
   padding: var(--space-6);
 }
 
+/* 초점존(CMP-3 초점 밴드) — 헤더 바로 밑에 밀착시키지 않고 상단 여백을 둬 콘텐츠(카드/입력)에
+   presence를 준다. 내부 요소(프롬프트·입력·카드) 간격도 여기서 준다. 앵커존은 여전히
+   margin-top:auto로 하단 고정되므로 이 존은 자연 높이로 초점 밴드에 머문다. */
+.focal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
 .bottomGroup {
   display: flex;
   flex-direction: column;
