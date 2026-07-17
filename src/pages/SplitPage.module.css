@@ -1,18 +1,27 @@
 /* ADHD 공간 일관성 통합(composition.md CMP-2) — 초점존(카드)과 앵커존(완료 CTA, 하단 고정)을
-   분리한다. 카드 콘텐츠(입력·칩·초안)가 길어져도 CTA의 y좌표는 흔들리지 않는다. */
+   분리한다. 카드 콘텐츠(입력·칩·초안)가 길어져도 CTA의 y좌표는 흔들리지 않는다.
+   2026-07-17 — 초점존은 남는 세로 공간 안에서 수직 중앙(margin-top/bottom auto)에 놓인다(CMP-3
+   개정). 초안이 늘어날수록 카드 자체가 커져 여백을 자연히 흡수하므로 버튼 위치는 그대로다. */
 .page {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
   padding: var(--space-6);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
 }
 
 .focal {
-  margin-top: var(--space-7);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
+/* 주 CTA(완료)는 다른 화면과 동일하게 앵커존 풀폭으로 — 구 버전은 display 지정이 없어 inline-flex
+   버튼이 좌하단 작은 알약으로 떴다(2026-07-17 UX 검토, "같은 전진 버튼은 항상 같은 모양·자리"). */
 .actions {
-  margin-top: auto;
+  display: flex;
+  flex-direction: column;
   padding-top: var(--space-6);
 }
 

@@ -1,16 +1,25 @@
 /* ADHD 공간 일관성 통합(composition.md CMP-2) — 카드-있음/카드-없음 화면 모두 동일한 3존
-   골격을 쓴다: 초점존(카드, 상단 1/3~광학 중앙)과 앵커존(주 CTA, margin-top:auto 하단 고정)을
-   분리해 "같은 흐름 전진 버튼은 항상 같은 자리"를 지킨다. 이전엔 카드 내부에 CTA를 두고
-   화면 상단 고정으로 취급했으나(구 CMP-2 예외), 이번 개편으로 그 예외를 없앤다. */
+   골격을 쓴다: 초점존(카드)과 앵커존(주 CTA, margin-top:auto 하단 고정)을 분리해 "같은 흐름
+   전진 버튼은 항상 같은 자리"를 지킨다. 이전엔 카드 내부에 CTA를 두고 화면 상단 고정으로
+   취급했으나(구 CMP-2 예외), 이번 개편으로 그 예외를 없앤다.
+   2026-07-17 — 초점존을 상단 고정(margin-top만)에서 남는 세로 공간 안 수직 중앙(margin-top/
+   bottom 둘 다 auto)으로 변경(CMP-3 개정). 앵커존은 여전히 margin-top:auto 없이도 항상
+   뷰포트 최하단에 붙는다 — 자유 공간을 전부 초점존의 위/아래 auto 마진이 나눠 가지므로
+   앵커 뒤에는 공간이 남지 않는다. 버튼 y좌표는 그대로 고정, 카드만 "바벨 공허" 없이
+   화면 가운데로 이동한다(사용자 피드백 — 카드-버튼 사이 공백이 과했음). */
 .page {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
   padding: var(--space-6);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
 }
 
 .focal {
-  margin-top: var(--space-7);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .body {
@@ -19,7 +28,11 @@
   font-size: var(--font-size-md);
 }
 
+/* 주 CTA는 다른 화면(대시보드·회고)과 동일하게 앵커존 풀폭으로 — 구 버전은 display 지정이 없어
+   inline-flex 버튼이 좌하단 작은 알약으로 떠, "같은 흐름 전진 버튼은 항상 같은 모양·자리" 원칙이
+   깨졌다(2026-07-17 UX 검토). */
 .actions {
-  margin-top: auto;
+  display: flex;
+  flex-direction: column;
   padding-top: var(--space-6);
 }

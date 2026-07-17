@@ -36,4 +36,17 @@ describe('Button', () => {
     expect(css).toMatch(/\.primary\s*\{[^}]*background-color:\s*var\(--action\)/)
     expect(css).not.toMatch(/\.secondary\s*\{[^}]*background-color:\s*var\(--action\)/)
   })
+
+  it('renders a disabled primary that stays legible instead of washing out (entry-screen default state)', () => {
+    render(
+      <Button variant="primary" disabled>
+        다음
+      </Button>,
+    )
+    expect(screen.getByRole('button', { name: '다음' })).toBeDisabled()
+    // 구 .button:disabled{opacity:0.5} 세척 폐기 — 진입 화면 주 CTA가 사문자로 보이던 원인.
+    expect(css).not.toMatch(/opacity:\s*0\.5/)
+    // 비활성 primary는 어두운 텍스트를 유지해 읽힌다(대비 보존).
+    expect(css).toMatch(/\.primary:disabled\s*\{[^}]*color:\s*var\(--action-text\)/)
+  })
 })

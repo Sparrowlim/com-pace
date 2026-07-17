@@ -1,23 +1,28 @@
 /* ADHD 공간 일관성 통합(composition.md CMP-2) — 카드-있음/카드-없음 화면 모두 동일한 3존
-   골격: 초점존(카드, 상단 여백 후 배치)과 앵커존(주 CTA+보조 버튼, margin-top:auto 하단 고정)을
-   분리한다. */
+   골격: 초점존(카드)과 앵커존(주 CTA+보조 버튼, 항상 뷰포트 하단 고정)을 분리한다.
+   2026-07-17 — 초점존은 남는 세로 공간 안에서 수직 중앙(margin-top/bottom auto)에 놓인다
+   (CMP-3 개정, 카드-버튼 사이 공백이 과했다는 사용자 피드백). 앵커존은 그대로 항상 최하단 —
+   자유 공간을 초점존의 위/아래 auto 마진이 나눠 가지므로 앵커 뒤엔 공간이 남지 않는다. */
 .page {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
   padding: var(--space-6);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
   background-color: var(--surface-base);
 }
 
 .focal {
-  margin-top: var(--space-7);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-top: auto;
 }
 
 .nextLabel {

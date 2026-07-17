@@ -7,24 +7,30 @@
   gap: var(--space-6);
   min-height: 100svh;
   padding: var(--space-6);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
 }
 
-/* 초점존(CMP-3 초점 밴드) — 헤더 바로 밑에 밀착시키지 않고 상단 여백을 둬 콘텐츠(카드/입력)에
-   presence를 준다. 내부 요소(프롬프트·입력·카드) 간격도 여기서 준다. 앵커존은 여전히
-   margin-top:auto로 하단 고정되므로 이 존은 자연 높이로 초점 밴드에 머문다. 여백 크기는 다른
-   TaskCard 화면(Onboarding·Split)과 통일(ADHD 공간 일관성 통합, composition.md CMP-2/3). */
+/* 초점존(CMP-3 초점 밴드) — 헤더 바로 밑에 밀착시키지 않고, 헤더와 앵커존(.bottomGroup) 사이
+   남는 세로 공간 안에서 수직 중앙(margin-top/bottom auto)에 놓는다. 내부 요소(프롬프트·입력·
+   카드) 간격도 여기서 준다. 앵커존은 margin-top:auto 없이도 항상 최하단에 붙는다 — 자유
+   공간을 전부 이 존의 위/아래 auto 마진이 나눠 가지기 때문. 여백 크기·정렬은 다른 TaskCard
+   화면(Onboarding·Split·DischargeDashboard)과 통일(ADHD 공간 일관성 통합, composition.md
+   CMP-2/3 — 2026-07-17, 카드-버튼 사이 공백이 과했다는 사용자 피드백으로 상단 고정에서
+   변경). */
 .focal {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  margin-top: var(--space-7);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .bottomGroup {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-top: auto;
 }
 
 /* 북극성이 두 칩(SPEC §9)으로 늘어나면 320px 폭에서 "설정"과 한 줄에 안 들어갈 수 있다 —

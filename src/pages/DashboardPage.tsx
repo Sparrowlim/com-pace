@@ -301,16 +301,18 @@ export default function DashboardPage() {
       <DashboardHeader northStar={getNorthStar()} navigate={navigate} />
       {/* 초점존(CMP-3) — 헤더 바로 밑 밀착 대신 초점 밴드에 놓아 콘텐츠에 presence를 준다. */}
       <div className={styles.focal}>{view.card}</div>
-      {/* 앵커존(CMP-2) — 상태와 무관하게 뷰포트 하단 고정. 주 행동(카드 상태 무관 동일 위치)/
-          방전 링크/그날의 증거 순서로 쌓는다. */}
+      {/* 앵커존(CMP-2) — 상태와 무관하게 뷰포트 하단 고정. 그날의 증거(에너지바)는 앵커 버튼군
+          '바로 위' 고정 슬롯에 둔다 — 회고(RetroPage)에서 칸 점등이 일어나는 위치와 같은 화면
+          영역이라, 대시보드로 돌아와도 증거가 위/아래로 순간이동하지 않는다("요소는 항상 같은
+          자리에", 사용자 피드백 2026-07-17). 그 아래로 주 행동 / 방전 링크를 쌓는다. */}
       <div className={styles.bottomGroup}>
+        <EnergyBar filledCount={energyCells.length} />
         {view.cta && (
           <Button variant="primary" disabled={view.cta.disabled} onClick={view.cta.onClick}>
             {view.cta.label}
           </Button>
         )}
         {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}
-        <EnergyBar filledCount={energyCells.length} />
       </div>
     </div>
   )

@@ -23,7 +23,24 @@
 
 .button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+}
+
+/* 비활성은 "죽은 버튼"이 아니라 "아직 준비 안 됨"으로 읽혀야 한다 — 진입 화면(대시보드)의 기본
+   상태가 빈 입력 → primary disabled이므로, 반투명 세척(구 opacity 0.5)은 첫 화면의 주 CTA를
+   사문자처럼 보이게 해 시동 자체를 막았다(§4 마찰 최소화). 텍스트는 그대로 읽히도록 어두운
+   --action-text를 유지하고, 채도 낮은 틴트 배경 + 그림자 제거로만 비활성을 표현한다(대비 유지). */
+.primary:disabled {
+  background-color: var(--action-tint);
+  color: var(--action-text);
+  box-shadow: none;
+}
+
+/* secondary도 비활성일 땐 배경·테두리까지 낮춰 '활성과 구분 안 됨'을 막는다(구 blanket opacity가
+   담당하던 역할 대체 — 현재 disabled secondary 사용처는 없으나 잠재 함정 차단). */
+.secondary:disabled {
+  background-color: var(--surface-subtle);
+  border-color: var(--border-raised);
+  color: var(--text-quiet);
 }
 
 /* DESIGN-TOKENS §5-3 — action(테라코타)은 즉시성의 순간에만, 보조는 아웃라인 */

@@ -270,14 +270,20 @@ export default function RetroPage() {
       <BonusCard hit={hit} />
       {showGestureHint && <GestureHintCard />}
       {capturedThought && <CapturedThoughtCard text={capturedThought} {...thoughtActions} />}
-      <EnergyBar filledCount={energyCells.length} justFilledIndex={energyCells.length - 1} />
-      <RetroActions
-        completed={completed}
-        onNext={handleNext}
-        onRest={handleRest}
-        onContinue={handleContinue}
-        onStop={handleStop}
-      />
+      {/* 앵커존 — EnergyBar가 액션 자신이 아니라 이 그룹에 함께 담겨야 뷰포트 하단에 같이
+          고정된다. margin-top:auto가 .actions 하나에만 걸려 있으면 EnergyBar는 상단 콘텐츠
+          흐름에 남고 버튼만 바닥으로 밀려나 큰 공백이 생긴다(2026-07-18 실측 스크린샷으로 발견
+          — DashboardPage.bottomGroup과 실제로는 다른 배치였다). */}
+      <div className={styles.bottomGroup}>
+        <EnergyBar filledCount={energyCells.length} justFilledIndex={energyCells.length - 1} />
+        <RetroActions
+          completed={completed}
+          onNext={handleNext}
+          onRest={handleRest}
+          onContinue={handleContinue}
+          onStop={handleStop}
+        />
+      </div>
     </div>
   )
 }

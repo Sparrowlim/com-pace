@@ -7,6 +7,9 @@
   gap: var(--space-5);
   min-height: 100svh;
   padding: var(--space-6);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
 }
 
 .prompt {
@@ -20,6 +23,17 @@
   font-family: var(--font-family-serif);
   font-size: var(--font-size-xl);
   color: var(--text-strong);
+}
+
+/* 신규(P0-B) — 집중 제스처 최초 1회 힌트. 축하도 경고도 아닌 중립 정보라 raised surface 톤을
+   쓰고 강조색·테두리를 두지 않는다(RetroPage의 gestureHint와 동일 취지). */
+.gestureHint {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .options {
