@@ -53,13 +53,19 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className={styles.page} data-task-card>
-      <TaskCard title={current.title}>
-        <p className={styles.body}>{current.body}</p>
+    <div className={styles.page}>
+      {/* 초점존 — 카드는 시각 콘텐츠만 담당, 흐름을 전진시키는 CTA는 앵커존으로 분리한다
+          (ADHD 공간 일관성 통합, composition.md CMP-2). */}
+      <div className={styles.focal} data-task-card>
+        <TaskCard title={current.title}>
+          <p className={styles.body}>{current.body}</p>
+        </TaskCard>
+      </div>
+      <div className={styles.actions}>
         <Button variant="primary" onClick={handleNext}>
           {current.cta}
         </Button>
-      </TaskCard>
+      </div>
     </div>
   )
 }

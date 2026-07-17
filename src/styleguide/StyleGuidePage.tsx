@@ -181,10 +181,12 @@ function ComponentCatalog() {
 
         <div className={styles.specimen}>
           <p className={styles.specimenLabel}>C-03 TaskCard</p>
+          {/* 2026-07-17 재구조화(composition.md CMP-2) — TaskCard는 콘텐츠만 담당, 흐름을
+              전진시키는 CTA는 카드 밖 앵커존에서만 렌더한다. */}
           <TaskCard title="발표 자료 만들기">
             <p className={styles.muted}>다음 조각: 목차 확인하기</p>
-            <Button variant="primary">이 블록 시작하기</Button>
           </TaskCard>
+          <Button variant="primary">이 블록 시작하기</Button>
         </div>
 
         <div className={styles.specimen}>
@@ -251,19 +253,19 @@ function CompositionCompare() {
           <div className={styles.focalBand}>
             <TaskCard title="발표 자료 만들기">
               <p className={styles.muted}>다음 조각: 목차 확인하기</p>
-              <Button variant="primary">이 블록 시작하기</Button>
             </TaskCard>
           </div>
           <div className={styles.framedGap} />
           <div className={styles.anchor}>
+            <Button variant="primary">이 블록 시작하기</Button>
             <Button variant="secondary">오늘은 가볍게 갈까요</Button>
             <EnergyBar filledCount={2} />
           </div>
         </figure>
       </div>
       <p className={styles.footnote}>
-        CMP-3 초점 밴드(카드에 presence + 상단 여백) · CMP-4 공백 프레이밍 · CMP-5 앵커 가시성 보장.
-        장식 추가 없이 비례·재배치만으로 해결(CMP-6).
+        CMP-2 카드는 콘텐츠만, 주 CTA는 앵커존 · CMP-3 초점 밴드(카드에 presence + 상단 여백) ·
+        CMP-4 공백 프레이밍 · CMP-5 앵커 가시성 보장. 장식 추가 없이 비례·재배치만으로 해결(CMP-6).
       </p>
     </Section>
   )

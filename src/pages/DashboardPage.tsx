@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { Button } from '../components/Button'
@@ -22,14 +22,12 @@ import type { NorthStar } from '../types/north-star'
 import { ROUTES } from '../routes/paths'
 import styles from './DashboardPage.module.css'
 
-function TimerInProgressCard({ onReturn }: { onReturn: () => void }) {
+// ADHD 공간 일관성 통합(composition.md CMP-2) — 카드는 콘텐츠만, "돌아가기"는 다른 상태의
+// 주 CTA와 함께 앵커존에서 렌더한다(resolveActiveTaskView가 함께 계산).
+function TimerInProgressCard() {
   return (
     <div data-task-card>
-      <TaskCard title="타이머가 진행 중이에요">
-        <Button variant="primary" onClick={onReturn}>
-          돌아가기
-        </Button>
-      </TaskCard>
+      <TaskCard title="타이머가 진행 중이에요" />
     </div>
   )
 }
@@ -69,18 +67,15 @@ function AddTaskPrompt({ draftTitle, onDraftChange }: AddTaskPromptProps) {
 type TaskCtaProps = {
   title: string
   nextLabel?: string
-  ctaLabel: string
-  onClick: () => void
 }
 
-function TaskCta({ title, nextLabel, ctaLabel, onClick }: TaskCtaProps) {
+// ADHD 공간 일관성 통합 — 이전엔 여기서 주 CTA 버튼까지 그렸으나(카드 내부 상단),
+// resolveActiveTaskView가 카드와 CTA를 함께 계산해 CTA는 항상 앵커존(화면 하단)에서만 렌더한다.
+function TaskCta({ title, nextLabel }: TaskCtaProps) {
   return (
     <div data-task-card>
       <TaskCard title={title}>
         {nextLabel && <p className={styles.nextLabel}>다음 조각: {nextLabel}</p>}
-        <Button variant="primary" onClick={onClick}>
-          {ctaLabel}
-        </Button>
       </TaskCard>
     </div>
   )
@@ -156,13 +151,25 @@ function DashboardHeader({
   )
 }
 
-type ActiveTaskSectionProps = {
+type PrimaryCta = {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+} | null
+
+type ActiveTaskView = {
+  card: ReactNode
+  cta: PrimaryCta
+}
+
+type ResolveActiveTaskViewArgs = {
   hasActiveBlock: boolean
   task: Task | undefined
   next: QueuedBlock | undefined
   fragmentOptions: QueuedBlock[]
   draftTitle: string
   onDraftChange: (value: string) => void
+  onAddTask: () => void
   onReturnToFocus: () => void
   onGoSplit: () => void
   onGoPredict: () => void
@@ -171,40 +178,52 @@ type ActiveTaskSectionProps = {
 
 // 대시보드가 매번 보여줄 "지금 할 일" 한 조각을 고르는 분기 — One Task 불변식(CLAUDE §2)의
 // 핵심 렌더 로직이라 DashboardPage 본체에서 분리해 각 상태를 개별적으로 읽기 쉽게 둔다.
-function ActiveTaskSection({
+// ADHD 공간 일관성 통합(composition.md CMP-2) — 카드(초점존)와 주 CTA(앵커존)를 같은 분기에서
+// 함께 파생시켜, 둘이 서로 다른 상태를 가리키는 경합을 원천 차단한다. FragmentChoice 상태는
+// 탭이 곧 확정이라(PH-05.1) cta가 null — 별도 CTA 버튼을 강제로 만들지 않는다.
+function resolveActiveTaskView({
   hasActiveBlock,
   task,
   next,
   fragmentOptions,
   draftTitle,
   onDraftChange,
+  onAddTask,
   onReturnToFocus,
   onGoSplit,
   onGoPredict,
   onChooseFragment,
-}: ActiveTaskSectionProps) {
+}: ResolveActiveTaskViewArgs): ActiveTaskView {
   if (hasActiveBlock) {
-    return <TimerInProgressCard onReturn={onReturnToFocus} />
+    return {
+      card: <TimerInProgressCard />,
+      cta: { label: '돌아가기', onClick: onReturnToFocus },
+    }
   }
   if (!task) {
-    return <AddTaskPrompt draftTitle={draftTitle} onDraftChange={onDraftChange} />
+    return {
+      card: <AddTaskPrompt draftTitle={draftTitle} onDraftChange={onDraftChange} />,
+      cta: { label: '다음', onClick: onAddTask, disabled: !draftTitle.trim() },
+    }
   }
   if (!task.splitDone) {
-    return <TaskCta title={task.title} ctaLabel="쪼개러 가기" onClick={onGoSplit} />
+    return {
+      card: <TaskCta title={task.title} />,
+      cta: { label: '쪼개러 가기', onClick: onGoSplit },
+    }
   }
   if (fragmentOptions.length >= 2) {
-    return (
-      <FragmentChoice title={task.title} options={fragmentOptions} onChoose={onChooseFragment} />
-    )
+    return {
+      card: (
+        <FragmentChoice title={task.title} options={fragmentOptions} onChoose={onChooseFragment} />
+      ),
+      cta: null,
+    }
   }
-  return (
-    <TaskCta
-      title={task.title}
-      nextLabel={next?.verbLabel}
-      ctaLabel="이 블록 시작하기"
-      onClick={onGoPredict}
-    />
-  )
+  return {
+    card: <TaskCta title={task.title} nextLabel={next?.verbLabel} />,
+    cta: { label: '이 블록 시작하기', onClick: onGoPredict },
+  }
 }
 
 function useDashboardStoreState() {
@@ -255,38 +274,39 @@ export default function DashboardPage() {
   // 노출한다(과제 소진·타이머 진행 중엔 방전으로 갈 대상이 없음).
   const canEnterDischarge = !activeBlock && !!task && task.splitDone && !!next
 
-  // CMP-2/CMP-5 — 아무거나 입력 상태(과제 없음·타이머 없음)의 주 행동 버튼은 앵커존에 둔다.
-  // 입력창 바로 밑이 아니라 뷰포트 하단에 고정해 화면이 바벨 공허로 비지 않게 한다.
-  const showAddTaskAction = !activeBlock && !task
+  // ADHD 공간 일관성 통합(composition.md CMP-2) — 카드(초점존)와 주 CTA(앵커존)를 한 함수에서
+  // 함께 파생시킨다. 상태별로 따로 계산하면 카드와 버튼이 서로 다른 상태를 가리키는 경합이 생길
+  // 수 있다(One Task 불변식 보호).
+  const view = resolveActiveTaskView({
+    hasActiveBlock: !!activeBlock,
+    task,
+    next,
+    fragmentOptions,
+    draftTitle,
+    onDraftChange: setDraftTitle,
+    onAddTask: handleAddTask,
+    onReturnToFocus: () => navigate(ROUTES.focus),
+    onGoSplit: () => navigate(ROUTES.split),
+    onGoPredict: () => navigate(ROUTES.predict),
+    onChooseFragment: (blockId: string) => {
+      if (!task) return
+      promoteQueuedBlock(task.id, blockId)
+      navigate(ROUTES.predict)
+    },
+  })
 
   return (
     <div className={styles.page}>
       {dischargeEndMessage && <DischargeEndBanner message={dischargeEndMessage} />}
       <DashboardHeader northStar={getNorthStar()} navigate={navigate} />
       {/* 초점존(CMP-3) — 헤더 바로 밑 밀착 대신 초점 밴드에 놓아 콘텐츠에 presence를 준다. */}
-      <div className={styles.focal}>
-        <ActiveTaskSection
-          hasActiveBlock={!!activeBlock}
-          task={task}
-          next={next}
-          fragmentOptions={fragmentOptions}
-          draftTitle={draftTitle}
-          onDraftChange={setDraftTitle}
-          onReturnToFocus={() => navigate(ROUTES.focus)}
-          onGoSplit={() => navigate(ROUTES.split)}
-          onGoPredict={() => navigate(ROUTES.predict)}
-          onChooseFragment={(blockId) => {
-            if (!task) return
-            promoteQueuedBlock(task.id, blockId)
-            navigate(ROUTES.predict)
-          }}
-        />
-      </div>
-      {/* 앵커존(CMP-2) — 상태와 무관하게 뷰포트 하단 고정. 주 행동/방전 링크/그날의 증거. */}
+      <div className={styles.focal}>{view.card}</div>
+      {/* 앵커존(CMP-2) — 상태와 무관하게 뷰포트 하단 고정. 주 행동(카드 상태 무관 동일 위치)/
+          방전 링크/그날의 증거 순서로 쌓는다. */}
       <div className={styles.bottomGroup}>
-        {showAddTaskAction && (
-          <Button variant="primary" disabled={!draftTitle.trim()} onClick={handleAddTask}>
-            다음
+        {view.cta && (
+          <Button variant="primary" disabled={view.cta.disabled} onClick={view.cta.onClick}>
+            {view.cta.label}
           </Button>
         )}
         {canEnterDischarge && <DischargeLink onEnter={() => navigate(ROUTES.dischargeEntry)} />}

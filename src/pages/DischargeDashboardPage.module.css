@@ -1,14 +1,23 @@
-/* ADHD 공간 일관성 — TaskCard를 쓰는 화면은 카드가 그 자체로 시각적 앵커라 다른 TaskCard
-   화면(온보딩·쪼개기·대시보드)과 같은 상단 정렬을 따른다(가운데 정렬 대체, DESIGN-SYSTEM.md
-   §1-1) — 카드 없는 화면(하단 고정 버튼군)과는 다른 그룹이지만, 그룹 내부에서는 "카드는 항상
-   화면 상단"으로 일관된다. */
+/* ADHD 공간 일관성 통합(composition.md CMP-2) — 카드-있음/카드-없음 화면 모두 동일한 3존
+   골격: 초점존(카드, 상단 여백 후 배치)과 앵커존(주 CTA+보조 버튼, margin-top:auto 하단 고정)을
+   분리한다. */
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
   min-height: 100svh;
   padding: var(--space-6);
   background-color: var(--surface-base);
+}
+
+.focal {
+  margin-top: var(--space-7);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: auto;
 }
 
 .nextLabel {
