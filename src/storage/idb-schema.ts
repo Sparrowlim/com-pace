@@ -4,9 +4,10 @@ import type { Block } from '../types/block'
 import type { Prediction } from '../types/prediction'
 import type { EnergyCell } from '../types/energy-cell'
 import type { Session } from '../types/session'
+import type { QueuedBlock } from '../types/queued-block'
 
 export const DB_NAME = 'com-pace'
-export const DB_VERSION = 2
+export const DB_VERSION = 3
 
 export interface ComPaceDB extends DBSchema {
   tasks: {
@@ -33,6 +34,11 @@ export interface ComPaceDB extends DBSchema {
     value: Session
     indexes: { date: string }
   }
+  queuedBlocks: {
+    key: string
+    value: QueuedBlock
+    indexes: { taskId: string; date: string }
+  }
 }
 
-export type AnyEntity = Task | Block | Prediction | EnergyCell | Session
+export type AnyEntity = Task | Block | Prediction | EnergyCell | Session | QueuedBlock

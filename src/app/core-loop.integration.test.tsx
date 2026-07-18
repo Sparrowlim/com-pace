@@ -153,7 +153,13 @@ describe('core loop integration — PH-08 discharge mode (real routes)', () => {
     expect(
       useAppStore.getState().energyCells.some((cell) => cell.blockId === blockAtStart?.id),
     ).toBe(true)
-    expect(useAppStore.getState().queuedBlocks).toHaveLength(1)
+    // 절대 개수 대신 이 과제로 스코프한 큐만 비교한다 — 같은 파일의 앞선 테스트("이탈한 조각은
+    // 재선택 가능")가 자기 과제 몫 큐를 의도적으로 큐에 남겨둔 채 끝나고, 이제 부팅 하이드레이션
+    // (useTaskQueueRecovery)이 fake-indexeddb를 그대로 반영하므로 그 잔여물도 전역 queuedBlocks에
+    // 함께 보인다(baselineEnergyCount와 동일한 이유의 테스트 간 미초기화, 의도적).
+    expect(
+      useAppStore.getState().queuedBlocks.filter((block) => block.taskId === task.id),
+    ).toHaveLength(1)
 
     advance15MinutesAndTick()
 
@@ -162,7 +168,8 @@ describe('core loop integration — PH-08 discharge mode (real routes)', () => {
     const state = useAppStore.getState()
     expect(state.dischargeMode).toBe(false)
     expect(state.energyCells.length).toBe(baselineEnergyCount + 1)
-    expect(state.queuedBlocks).toHaveLength(1)
-    expect(state.queuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
+    const ownQueuedBlocks = state.queuedBlocks.filter((block) => block.taskId === task.id)
+    expect(ownQueuedBlocks).toHaveLength(1)
+    expect(ownQueuedBlocks[0]).toMatchObject({ taskId: task.id, verbLabel: '책상 정리하기' })
   })
 })

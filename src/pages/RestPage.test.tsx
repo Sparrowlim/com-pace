@@ -35,7 +35,7 @@ describe('RestPage — SCREEN-FLOW 6-A', () => {
     const user = userEvent.setup()
     useAppStore.setState({
       tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
-      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기' }],
+      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기', date: '2026-07-07' }],
     })
     renderRestPage()
 
@@ -57,7 +57,7 @@ describe('RestPage — SCREEN-FLOW 6-A', () => {
     const user = userEvent.setup()
     useAppStore.setState({
       tasks: [{ id: 'task-1', title: '청소', date: '2026-07-07', createdAt: '', splitDone: true }],
-      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기' }],
+      queuedBlocks: [{ id: 'q1', taskId: 'task-1', verbLabel: '이메일 확인하기', date: '2026-07-07' }],
     })
     renderRestPage()
 

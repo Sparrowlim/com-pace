@@ -102,7 +102,12 @@ describe('SplitPage', () => {
     expect(await screen.findByText('DASHBOARD_STUB')).toBeInTheDocument()
     const { queuedBlocks, tasks } = useAppStore.getState()
     expect(queuedBlocks).toEqual([
-      { id: expect.any(String), taskId: task.id, verbLabel: '책상 정리하기' },
+      {
+        id: expect.any(String),
+        taskId: task.id,
+        verbLabel: '책상 정리하기',
+        date: expect.any(String),
+      },
     ])
     expect(tasks.find((t) => t.id === task.id)?.splitDone).toBe(true)
   })
