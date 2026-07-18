@@ -7,8 +7,10 @@ import '@fontsource/gowun-dodum/korean-400.css'
 import './index.css'
 import { router } from './app/router'
 import { persistStorage } from './storage/persist'
+import { registerAppUpdate } from './pwa/register-update'
 
 void persistStorage()
+registerAppUpdate()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
