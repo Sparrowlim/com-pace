@@ -42,6 +42,7 @@ test.describe('빈 대시보드(zero) → 새 과제 재진입 (SCREEN-FLOW §2 
       await expect(page).toHaveURL(/\/focus$/)
       await expect(page.getByText('책상 정리하기')).toBeVisible()
       await page.clock.fastForward(900_000)
+      await page.getByRole('button', { name: '이 조각 끝났어요' }).click()
 
       await expect(page).toHaveURL(/\/retro$/)
       await page.getByRole('button', { name: '바로 다음 블록' }).click()
