@@ -119,6 +119,7 @@ test.describe('디자인 QA 갭 — 미커버 화면 스냅샷 (SCREEN-FLOW §1)
 
       await expect(page).toHaveURL(/\/focus$/)
       await page.clock.fastForward(900_000)
+      await page.getByRole('button', { name: '이 조각 끝났어요' }).click()
       await expect(page).toHaveURL(/\/retro$/)
       await page.getByRole('button', { name: '잠시 쉬기' }).click()
 
@@ -142,6 +143,7 @@ test.describe('디자인 QA 갭 — 미커버 화면 스냅샷 (SCREEN-FLOW §1)
 
       await expect(page).toHaveURL(/\/focus$/)
       await page.clock.fastForward(900_000)
+      await page.getByRole('button', { name: '이 조각 끝났어요' }).click()
 
       await expect(page).toHaveURL(/\/retro$/)
       await expect(page.getByText('15분, 오늘도 해냈어요.')).toBeVisible()
