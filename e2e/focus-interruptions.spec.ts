@@ -64,6 +64,40 @@ test.describe('집중 중 이탈 — 딴생각 포착 / 일시정지 (SCREEN-FLO
       await expect(page.getByText('책상 정리하기')).toBeVisible()
     })
 
+    // 버그 픽스(2026-07-18) — 딴생각 포착은 15분 세션 중 반복 재오픈되도록 설계돼 있다(SCREEN-FLOW
+    // 5-A). 재오픈 시 BottomSheet의 자동 포커스가 슬라이드-인 트랜지션(transform) 도중에 걸리면
+    // iOS Safari에서 뷰포트 확대가 고착되는 WebKit 버그가 있었다(BottomSheet.tsx, transitionend까지
+    // 미루도록 수정). 이 프로젝트의 Playwright 프로젝트는 전부 Chromium이라 실제 확대 고착 자체는
+    // 여기서 재현 불가 — 이 테스트는 "두 번째 재오픈에서도 입력에 포커스가 정상 안착하는가"라는
+    // 회귀만 잡는다. 실제 iOS 확대 고착 여부는 실기기 수동 검증 필요(계획 Phase 4).
+    test(`딴생각 포착을 두 번 연속 열고 닫아도 재오픈마다 입력에 포커스가 안착한다 — ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: width === 320 ? 700 : 1024 })
+      await enterFocusScreen(page)
+
+      const captureInput = page.getByLabel('잠깐 스친 생각, 적어두고 다시 집중하세요')
+
+      await page.getByText('책상 정리하기').click()
+      const modal = page.getByRole('dialog', { name: '딴생각 포착' })
+      await expect(modal).toBeVisible()
+      await expect(captureInput).toBeFocused()
+      await captureInput.fill('빨래도 해야지')
+      await page.getByRole('button', { name: '나중에 보기' }).click()
+      await expect(modal).not.toBeVisible()
+
+      // 재오픈 — 이번 재포커스가 이번 픽스의 핵심 회귀 대상
+      await page.getByText('책상 정리하기').click()
+      await expect(modal).toBeVisible()
+      await expect(captureInput).toBeFocused()
+      await expect(captureInput).toHaveValue('')
+      await page.getByRole('button', { name: '나중에 보기' }).click()
+      await expect(modal).not.toBeVisible()
+
+      await expect(page).toHaveURL(/\/focus$/)
+      await expect(page.getByText('책상 정리하기')).toBeVisible()
+    })
+
     test(`긴 누름 → 일시정지 → 재개, 그리고 그만하기(미완료 회고) — ${width}px`, async ({
       page,
     }) => {
