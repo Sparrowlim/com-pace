@@ -90,10 +90,31 @@ describe('useSessionRecovery — continue (same day, under 900s)', () => {
     expect(state.elapsedSeconds).toBeGreaterThanOrEqual(0)
     expect(state.elapsedSeconds).toBeLessThan(900)
   })
+
+  test('hydrates an existing prediction from storage into memory (in-memory predictions is always empty right after boot)', async () => {
+    const startedAt = new Date(Date.now() - 60_000).toISOString()
+    const block = await seedOrphanedBlock({ startedAt })
+    await useAppStore.getState().setPrediction(block.id, false)
+    useAppStore.setState({ predictions: [] })
+
+    renderProbe()
+
+    await screen.findByText('FOCUS_STUB')
+    const hydrated = useAppStore.getState().predictions.find((p) => p.blockId === block.id)
+    expect(hydrated).toMatchObject({ blockId: block.id, guess: false, actual: null })
+  })
 })
 
+// 버그 수정(#6, 2026-07-18) — 15분 이상 경과 후 재기동은 더 이상 시스템이 자동으로
+// completed:true를 확정하지 않는다. FocusPage.tsx의 SCREEN-FLOW 5-C 주석("완료 여부를
+// 시스템이 추정하지 않고 사용자가 직접 고른다")과 SCREEN-FLOW.md §3-1이 재기동 경로에도
+// 5-C를 요구하는데, 기존 코드는 이 분기에서 곧장 store.complete()를 호출해 회고로 직행시켰다
+// (CLAUDE §2 "시스템 자동판정 금지" 위반). 지금은 continue와 동일하게 activeBlock만 복구해
+// /focus로 보내고, 실제 FocusPage가 마운트되면 useFocusTimer.detectWrapUp이 라이브 타이머와
+// 완전히 같은 코드 경로로 에너지 점등 + 5-C 시트를 띄운다(이 유닛 테스트는 스텁 라우트라 그
+// 시트 자체는 e2e/session-recovery.spec.ts가 실브라우저로 검증한다).
 describe('useSessionRecovery — finish (same day, at/over 900s)', () => {
-  test('completes the block, lights energy, sets retro context, and navigates to /retro', async () => {
+  test('rehydrates activeBlock/elapsedSeconds and returns to /focus — does not auto-complete', async () => {
     // 20분 전 — 로컬 자정 근처 실행이 아닌 한 항상 "같은 로컬 날짜"이면서 900초를 넘긴다.
     // UTC 자정으로 고정하면 KST(UTC+9)에서 로컬 날짜가 갈라질 수 있어(code review 발견) 피한다.
     const startedAt = new Date(Date.now() - 20 * 60_000).toISOString()
@@ -101,30 +122,37 @@ describe('useSessionRecovery — finish (same day, at/over 900s)', () => {
 
     renderProbe()
 
-    expect(await screen.findByText('RETRO_STUB')).toBeInTheDocument()
+    expect(await screen.findByText('FOCUS_STUB')).toBeInTheDocument()
     const state = useAppStore.getState()
-    expect(state.activeBlock).toBeNull()
-    expect(state.lastResolvedBlock).toMatchObject({ id: block.id, status: 'done' })
-    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(true)
-    expect(activeSessionPointer.get()).toBeNull()
+    expect(state.activeBlock?.id).toBe(block.id)
+    expect(state.elapsedSeconds).toBeGreaterThanOrEqual(900)
+    // 완료/이어가기 라벨은 아직 확정되지 않았다 — 5-C에서 사용자가 고를 때까지 보류
+    expect(state.lastResolvedBlock).toBeNull()
+    expect(state.energyCells.some((cell) => cell.blockId === block.id)).toBe(false)
+    const persisted = await idbStorage.findById<Block>('blocks', block.id)
+    expect(persisted?.status).toBe('in_progress')
+    expect(activeSessionPointer.get()).toBe(block.id)
   })
 
-  test('resolves a prediction that was set before the interruption (fetched from storage, not memory)', async () => {
+  test('hydrates an existing prediction from storage into memory (not resolved yet)', async () => {
     const startedAt = new Date(Date.now() - 20 * 60_000).toISOString()
     const block = await seedOrphanedBlock({ startedAt })
     await useAppStore.getState().setPrediction(block.id, true)
     // 부팅 직후를 흉내내려면 인메모리 predictions는 비워둬야 한다 — 이 값이 항상 빈 배열인
-    // 실제 재기동 상황에서도 예측이 정상 해소되는지가 이 테스트의 핵심이다.
+    // 실제 재기동 상황에서도 예측이 정상 하이드레이션되는지가 이 테스트의 핵심이다.
     useAppStore.setState({ predictions: [] })
 
     renderProbe()
 
-    await screen.findByText('RETRO_STUB')
+    await screen.findByText('FOCUS_STUB')
+    const hydrated = useAppStore.getState().predictions.find((p) => p.blockId === block.id)
+    expect(hydrated).toMatchObject({ blockId: block.id, guess: true, actual: null })
+    // 아직 사용자가 5-C를 확정하기 전이므로 Storage 쪽 actual도 그대로 null
     const persisted = await idbStorage.findById<{ blockId: string; actual: boolean | null }>(
       'predictions',
       block.id,
     )
-    expect(persisted?.actual).toBe(true)
+    expect(persisted?.actual).toBeNull()
   })
 })
 

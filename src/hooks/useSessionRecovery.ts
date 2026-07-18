@@ -5,7 +5,7 @@ import { idbStorage } from '../storage/idb-storage'
 import { activeSessionPointer } from '../lib/active-session-pointer'
 import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
 import { computeElapsedSeconds, judgeSessionReturn } from '../lib/session-timer'
-import { nowIso, todayDateString } from '../lib/time'
+import { nowIso } from '../lib/time'
 import { DISCHARGE_END_MESSAGE } from './useFocusTimer'
 import { ROUTES } from '../routes/paths'
 import type { Block } from '../types/block'
@@ -57,24 +57,12 @@ async function recoverSession(navigate: (path: string) => void): Promise<void> {
 
   const store = useAppStore.getState()
 
-  if (judgment === 'continue') {
-    // dischargeBlockPointer is left untouched here — the block is still running and will reach
-    // finish() later through the normal FocusPage/useFocusTimer flow, which needs to read it then.
-    useAppStore.setState({ activeBlock: block, elapsedSeconds })
-    navigate(ROUTES.focus)
-    return
-  }
-
-  // finish/carryover 둘 다 기존 complete()/markIncomplete()를 재사용한다 — activeBlock을 먼저
-  // 세팅해야 그 액션들이 참조하는 get().activeBlock이 복구 대상 블록이 된다.
-  useAppStore.setState({ activeBlock: block, elapsedSeconds })
-  if (wasDischarge) {
-    dischargeBlockPointer.clear()
-  }
-
   if (judgment === 'finish' && wasDischarge) {
-    // PH-08 §5 — 회고 전체 스킵, 에너지는 방전 시작 시점에 이미 점등됐으므로 재점등하지 않는다
-    // (그렇지 않으면 재기동 복구가 매번 에너지를 이중으로 켠다).
+    // PH-08 §5 — 방전은 회고 전체 스킵이 확정 스펙이라 5-C 대상이 아니다(사용자 선택지 자체가
+    // 없음). 에너지는 방전 대시보드 시작 시점에 이미 점등됐으므로 재점등하지 않는다(그렇지
+    // 않으면 재기동 복구가 매번 에너지를 이중으로 켠다).
+    useAppStore.setState({ activeBlock: block, elapsedSeconds })
+    dischargeBlockPointer.clear()
     await store.complete()
     store.setCapturedThought(null)
     store.exitDischarge()
@@ -83,22 +71,32 @@ async function recoverSession(navigate: (path: string) => void): Promise<void> {
     return
   }
 
-  if (judgment === 'finish') {
-    await store.complete()
+  if (judgment === 'continue' || judgment === 'finish') {
+    // 버그 수정(#6) — finish(비-방전)도 시스템이 자동으로 completed:true를 확정하지 않는다
+    // (SCREEN-FLOW P14, CLAUDE §2 "시스템 자동판정 금지"). continue와 동일하게 activeBlock만
+    // 복구해 /focus로 보내면, FocusPage 재마운트 시 useFocusTimer.detectWrapUp이
+    // elapsedSeconds>=FOCUS_SECONDS를 보고 라이브 타이머 경로와 완전히 같은 코드로 에너지 점등
+    // + 5-C 마무리 시트를 띄운다 — 완료/이어가기 라벨은 그 시트에서 사용자가 직접 고른다.
+    //
     // 인메모리 predictions는 부팅 직후 항상 비어 있으므로(스토어가 재시작됐다) Storage에서
-    // 직접 조회한다 — 그렇지 않으면 이 분기는 절대 참이 될 수 없는 죽은 코드가 된다
-    // (code review 발견).
+    // 미리 조회해 하이드레이션해둔다 — 그렇지 않으면 나중에 사용자가 5-C를 확정할 때
+    // finishNormalPath의 hasPrediction 판정이 거짓이 되어 예측 적중/빗나감이 조용히 사라진다
+    // (원래 finish 분기가 이 문제 때문에 직접 resolvePrediction하던 것과 동일 근거 — continue
+    // 경로도 재기동 후 자연 완료 시 같은 문제가 있었으므로 함께 고친다).
     const prediction = await idbStorage.findById<Prediction>('predictions', block.id)
-    if (prediction) {
-      await store.resolvePrediction(block.id, true)
-    }
-    await store.loadEnergyCellsForDate(todayDateString())
-    await store.lightEnergyCell(block.id, todayDateString())
-    store.setLastResolvedBlock({ ...block, status: 'done', endedAt: now })
-    navigate(ROUTES.retro)
+    useAppStore.setState({
+      activeBlock: block,
+      elapsedSeconds,
+      predictions: prediction
+        ? [...store.predictions.filter((p) => p.blockId !== block.id), prediction]
+        : store.predictions,
+    })
+    navigate(ROUTES.focus)
     return
   }
 
   // carryover — 침묵: 회고 없음, 에너지 없음, 내비게이션 없음(자동완료 ❌, SPEC §6).
+  // markIncomplete()가 참조하는 get().activeBlock을 먼저 세팅해야 한다.
+  useAppStore.setState({ activeBlock: block, elapsedSeconds })
   await store.markIncomplete()
 }
