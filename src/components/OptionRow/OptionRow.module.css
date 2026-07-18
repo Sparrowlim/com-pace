@@ -21,8 +21,11 @@
   outline-offset: 2px;
 }
 
-/* CLAUDE.md §2 결정 피로 차단 — 닫힌 2~3지선다에서 선택된 항만 action.tint로 표시 */
+/* CLAUDE.md §2 결정 피로 차단 — 닫힌 2~3지선다에서 선택된 항만 action.tint로 표시.
+   구 버전은 선택 시 border-color를 transparent로 없애 옅은 틴트만 남아, 설정 알림 on/off처럼
+   상주하는 토글에서 '지금 어느 쪽이 켜져 있는지'가 한눈에 안 읽혔다(2026-07-17 UX 검토).
+   선택 항에 action.ink 강조 테두리를 둬 현재 상태를 또렷하게 만든다. */
 .selected {
   background-color: var(--action-tint);
-  border-color: transparent;
+  border-color: var(--action-ink);
 }

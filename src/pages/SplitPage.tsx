@@ -114,14 +114,20 @@ export default function SplitPage() {
   }
 
   return (
-    <div className={styles.page} data-task-card>
-      <TaskCard title={task.title}>
-        <FragmentEntry fragment={fragment} onFragmentChange={setFragment} onPickVerb={addDraft} />
-        <DraftList drafts={drafts} onRemove={removeDraft} />
+    <div className={styles.page}>
+      {/* 초점존 — 카드는 조립 중인 콘텐츠(입력·칩·초안 목록)만 담당, 흐름을 전진시키는
+          "완료" CTA는 앵커존으로 분리한다(ADHD 공간 일관성 통합, composition.md CMP-2). */}
+      <div className={styles.focal} data-task-card>
+        <TaskCard title={task.title}>
+          <FragmentEntry fragment={fragment} onFragmentChange={setFragment} onPickVerb={addDraft} />
+          <DraftList drafts={drafts} onRemove={removeDraft} />
+        </TaskCard>
+      </div>
+      <div className={styles.actions}>
         <Button variant="primary" disabled={drafts.length === 0} onClick={finishSplit}>
           완료
         </Button>
-      </TaskCard>
+      </div>
     </div>
   )
 }

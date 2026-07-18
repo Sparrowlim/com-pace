@@ -76,18 +76,23 @@ export default function DischargeDashboardPage() {
 
   return (
     <div className={styles.page} data-mode="discharge">
-      <div data-task-card>
+      {/* 초점존 — 카드는 콘텐츠만, 흐름을 전진시키는 CTA는 앵커존으로 분리한다
+          (ADHD 공간 일관성 통합, composition.md CMP-2). */}
+      <div className={styles.focal} data-task-card>
         <TaskCard title={task.title}>
           <p className={styles.nextLabel}>다음 조각: {verbLabel}</p>
           <p className={styles.copy}>타이머만 켜면, 오늘의 승리예요</p>
-          <Button variant="primary" onClick={handleStart} disabled={isStarting}>
-            타이머만 켜면 승리
-          </Button>
         </TaskCard>
       </div>
-      <Button variant="secondary" onClick={handleExit}>
-        평소 모드로 돌아가기
-      </Button>
+      {/* 앵커존 — 주 CTA + 보조 이탈 버튼을 함께 하단 고정한다. */}
+      <div className={styles.actions}>
+        <Button variant="primary" onClick={handleStart} disabled={isStarting}>
+          타이머만 켜면 승리
+        </Button>
+        <Button variant="secondary" onClick={handleExit}>
+          평소 모드로 돌아가기
+        </Button>
+      </div>
     </div>
   )
 }
