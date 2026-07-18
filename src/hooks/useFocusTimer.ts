@@ -148,6 +148,12 @@ function detectWrapUp(
   if (elapsedSeconds < FOCUS_SECONDS) return
   const block = useAppStore.getState().activeBlock
   if (!block) return
+  // code review 발견(#6 수정 부작용) — 세션 복구(useSessionRecovery)는 일시정지된 채로 15분을
+  // 넘긴 블록도 이 경로로 들여보낸다(정지 구간이 Storage에 없어 경과초 계산이 정지를 모름).
+  // 일시정지 중엔 5-C를 얹지 않는다 — 안 그러면 PauseOverlay와 WrapUpOverlay가 동시에 뜬다
+  // (BottomSheet 2개 겹침, 포커스 트랩 충돌). 재개하면 다음 tick에서 elapsedSeconds가 다시
+  // 바뀌어 이 effect가 재실행되고, 그때는 진행 상태라 정상적으로 5-C가 뜬다.
+  if (block.status === 'paused') return
   notifyOnce(block.id)
   if (dischargeBlockPointer.get() === block.id) {
     void finish(true)
