@@ -108,7 +108,7 @@ export default function SplitPage() {
 
   async function finishSplit() {
     if (drafts.length === 0) return
-    queueBlocks(taskId, drafts)
+    await queueBlocks(taskId, drafts)
     await markTaskSplitDone(taskId)
     navigate(ROUTES.dashboard)
   }

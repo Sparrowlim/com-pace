@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-16T07:47:07.057Z -->
+<!-- 마지막 생성: 2026-07-18T08:29:43.240Z -->
 
 ## src/
 ```
@@ -72,6 +72,8 @@ hooks/
   useLongPress.ts
   useSessionRecovery.test.tsx
   useSessionRecovery.ts
+  useTaskQueueRecovery.test.tsx
+  useTaskQueueRecovery.ts
 lib/
   active-session-pointer.ts
   contrast.test.ts
@@ -167,6 +169,9 @@ store/
     task-slice.ts
     timer-slice.test.ts
     timer-slice.ts
+styleguide/
+  StyleGuidePage.module.css
+  StyleGuidePage.tsx
 styles/
   tokens.generated.css
   tokens.generated.test.ts
@@ -179,6 +184,7 @@ types/
   energy-cell.ts
   north-star.ts
   prediction.ts
+  queued-block.ts
   session.ts
   task.ts
 ```
@@ -198,6 +204,17 @@ _archive/
   요구사항 합의서 (Grill Summary) v1.0.md
   제품 기획-결정 문서 v1.3.md
   화면 흐름 명세서.md
+design-system/
+  CHANGELOG.md
+  components.md
+  composition.md
+  decision-guide.md
+  elevation.md
+  motion.md
+  README-gallery.md
+  recipes.md
+  spacing.md
+  typography.md
 phases/
   _TEMPLATE.md
   PH-00-tooling.md

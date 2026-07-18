@@ -1,16 +1,13 @@
 import type { StateCreator } from 'zustand'
 import { generateId } from '../../lib/id'
-
-export interface QueuedBlock {
-  id: string
-  taskId: string
-  verbLabel: string
-}
+import { idbStorage } from '../../storage/idb-storage'
+import { todayDateString } from '../../lib/time'
+import type { QueuedBlock } from '../../types/queued-block'
 
 export interface BlockQueueSlice {
   queuedBlocks: QueuedBlock[]
-  queueBlocks: (taskId: string, verbLabels: string[]) => void
-  dequeueBlock: (id: string) => void
+  queueBlocks: (taskId: string, verbLabels: string[]) => Promise<void>
+  dequeueBlock: (id: string) => Promise<void>
   promoteQueuedBlock: (taskId: string, blockId: string) => void
 }
 
@@ -19,16 +16,20 @@ export const createBlockQueueSlice: StateCreator<BlockQueueSlice, [], [], BlockQ
 ) => ({
   queuedBlocks: [],
 
-  queueBlocks: (taskId, verbLabels) => {
+  queueBlocks: async (taskId, verbLabels) => {
+    const date = todayDateString()
     const newBlocks: QueuedBlock[] = verbLabels.map((verbLabel) => ({
       id: generateId(),
       taskId,
       verbLabel,
+      date,
     }))
+    await Promise.all(newBlocks.map((block) => idbStorage.create('queuedBlocks', block)))
     set((state) => ({ queuedBlocks: [...state.queuedBlocks, ...newBlocks] }))
   },
 
-  dequeueBlock: (id) => {
+  dequeueBlock: async (id) => {
+    await idbStorage.delete('queuedBlocks', id)
     set((state) => ({
       queuedBlocks: state.queuedBlocks.filter((block) => block.id !== id),
     }))

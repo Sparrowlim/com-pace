@@ -12,7 +12,7 @@ import {
   selectNextQueuedBlock,
   selectQueuedBlocksForTask,
 } from '../lib/core-loop-selectors'
-import type { QueuedBlock } from '../store/slices/block-queue-slice'
+import type { QueuedBlock } from '../types/queued-block'
 import type { Task } from '../types/task'
 import { todayDateString } from '../lib/time'
 import { isOnboardingComplete } from '../lib/onboarding-status'

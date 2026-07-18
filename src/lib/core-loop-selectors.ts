@@ -1,5 +1,5 @@
 import type { Task } from '../types/task'
-import type { QueuedBlock } from '../store/slices/block-queue-slice'
+import type { QueuedBlock } from '../types/queued-block'
 import { ROUTES } from '../routes/paths'
 
 /**

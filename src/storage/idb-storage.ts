@@ -50,6 +50,12 @@ function getDB(): Promise<IDBPDatabase<ComPaceDB>> {
         await backfillTaskDates(transaction)
         await backfillBlockDates(transaction)
       }
+      // v3 — 베타 적합도 감사 CRITICAL 수정: queuedBlocks(쪼갰지만 아직 시작 안 한 조각)를 새
+      // 스토어로 영속화한다. 기존 스토어는 건드리지 않으므로 백필이 필요 없다.
+      if (oldVersion < 3) {
+        db.createObjectStore('queuedBlocks', { keyPath: 'id' }).createIndex('taskId', 'taskId')
+        transaction.objectStore('queuedBlocks').createIndex('date', 'date')
+      }
     },
   })
   return dbPromise
@@ -104,5 +110,10 @@ export const idbStorage: Storage = {
     const db = await getDB()
     const result = await db.get(store, id)
     return result === undefined ? null : (result as unknown as T)
+  },
+
+  async delete(store: StoreName, id: string): Promise<void> {
+    const db = await getDB()
+    await db.delete(store, id)
   },
 }

@@ -51,7 +51,7 @@ export default function PredictPage() {
   const nextVerbLabel = next.verbLabel
 
   async function choose(guess: boolean) {
-    dequeueBlock(nextId)
+    await dequeueBlock(nextId)
     const block = await startBlock(taskId, nextVerbLabel)
     await setPrediction(block.id, guess)
     await startSession(todayDateString(), false)
