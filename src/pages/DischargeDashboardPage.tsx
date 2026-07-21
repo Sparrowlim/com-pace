@@ -86,8 +86,10 @@ export default function DischargeDashboardPage() {
       </div>
       {/* 앵커존 — 주 CTA + 보조 이탈 버튼을 함께 하단 고정한다. */}
       <div className={styles.actions}>
+        {/* Finding #6 — disabled만으론 탭 후 아무 피드백이 없어 눌렸는지 불확실했다. 새 시각
+            요소(스피너 등) 없이 라벨 전환만으로 처리한다(§6 볼거리 금지). */}
         <Button variant="primary" onClick={handleStart} disabled={isStarting}>
-          타이머만 켜면 승리
+          {isStarting ? '시작하는 중...' : '타이머만 켜면 승리'}
         </Button>
         <Button variant="secondary" onClick={handleExit}>
           평소 모드로 돌아가기

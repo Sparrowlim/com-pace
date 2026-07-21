@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'vitest'
+import { describe, expect, test, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { useAppStore } from '../store'
 import { ROUTES } from '../routes/paths'
 import { todayDateString } from '../lib/time'
 import { dischargeBlockPointer } from '../lib/discharge-block-pointer'
+import type { Block } from '../types/block'
 
 function renderDischargeDashboardPage() {
   const router = createMemoryRouter(
@@ -107,6 +108,42 @@ describe('DischargeDashboardPage — a runnable fragment exists, dischargeMode o
     await screen.findByText('FOCUS_STUB')
     const cell = useAppStore.getState().energyCells[0]
     expect(cell?.date).toBe(todayDateString())
+  })
+
+  // Finding #6 — disabled만으론 탭 피드백이 없었다. 새 스피너 없이 라벨 전환만으로 확인한다.
+  // fake-indexeddb 환경에서 startBlock이 사실상 즉시 resolve돼 중간 상태를 관찰할 창이 없으므로,
+  // startBlock을 직접 지연 가능한 프로미스로 바꿔치기해 "시작하는 중..." 렌더 구간을 확보한다.
+  test('shows a loading label while starting, without a new spinner element', async () => {
+    const task = await seedTaskWithQueuedBlock()
+    useAppStore.setState({ dischargeMode: true })
+    let resolveStart: (block: Block) => void = () => {}
+    const pendingStart = new Promise<Block>((resolve) => {
+      resolveStart = resolve
+    })
+    const startBlockSpy = vi
+      .spyOn(useAppStore.getState(), 'startBlock')
+      .mockReturnValue(pendingStart)
+    renderDischargeDashboardPage()
+    const user = userEvent.setup()
+
+    const clickPromise = user.click(
+      await screen.findByRole('button', { name: '타이머만 켜면 승리' }),
+    )
+    expect(await screen.findByRole('button', { name: '시작하는 중...' })).toBeInTheDocument()
+
+    resolveStart({
+      id: 'block-1',
+      taskId: task.id,
+      verbLabel: '책상 정리하기',
+      status: 'in_progress',
+      date: todayDateString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+    })
+    await clickPromise
+    startBlockSpy.mockRestore()
+
+    expect(await screen.findByText('FOCUS_STUB')).toBeInTheDocument()
   })
 
   test('"평소 모드로 돌아가기" exits discharge mode and returns to the dashboard', async () => {

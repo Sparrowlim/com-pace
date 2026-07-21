@@ -1,3 +1,26 @@
+/* Finding #5 — 스크림 전용 디자인 토큰이 DESIGN-TOKENS.md에 아직 없어, 기존 --text-strong
+   (color.ink.900)를 color-mix로 저알파 처리해 로컬 딤을 만든다(임의 색 신설·하드코딩 금지,
+   stylelint declaration-property-value-disallowed-list가 리터럴 hex/rgb()를 차단한다).
+   pointer-events: none으로 완전 비인터랙티브 — 탭-바깥-닫기를 의도적으로 만들지 않는다. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background-color: color-mix(in srgb, var(--text-strong) 32%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--easing-quiet);
+}
+
+.scrim.entered {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim {
+    transition-duration: 0s;
+  }
+}
+
 .sheet {
   position: fixed;
   left: 0;

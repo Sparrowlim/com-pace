@@ -96,6 +96,18 @@ function CountdownArea({
   )
 }
 
+// 초점존/앵커존 3존 골격 통일(composition.md CMP-2/CMP-3) — 이전엔 페이지 전체를 한 덩어리로
+// justify-content:center해 타이머와 이탈 고지가 화면 중앙 어딘가에 함께 붕 떠 보였다. 다른
+// 화면과 동일하게 타이머는 남는 세로 공간 안에서 스스로 중앙에 앉고, 이탈 고지는 항상 같은
+// 자리(뷰포트 최하단)에 앵커된다("요소는 항상 같은 자리에"). FocusPage 본문 길이 억제 겸용.
+function FocalZone(props: CountdownAreaProps) {
+  return (
+    <div className={styles.focal}>
+      <CountdownArea {...props} />
+    </div>
+  )
+}
+
 // 개발 중 흐름 확인용 — 프로덕션 빌드에서는 트리쉐이킹으로 제거된다(CLAUDE §2 "시간 기반
 // 완료" 불변 규칙 보호, 실사용자에게는 절대 노출되지 않음).
 function DevSkipButton({ onSkip }: { onSkip: () => void }) {
@@ -129,6 +141,10 @@ type CaptureModalProps = {
 }
 
 function CaptureModal({ isOpen, draft, onDraftChange, onDone }: CaptureModalProps) {
+  // Finding #3 — 버튼 라벨이 항상 "나중에 보기"로 고정돼 있어 빈 채로 닫아도 뭔가 저장된 것처럼
+  // 읽혔다. 실제로 저장하는 건 draft가 있을 때뿐(closeCapture)이므로 라벨도 그 분기를 반영한다.
+  // 버튼은 여전히 하나, 경로도 하나 — 새 판단 지점을 추가하지 않는다(CLAUDE §2).
+  const hasDraft = draft.trim().length > 0
   return (
     <BottomSheet isOpen={isOpen} label="딴생각 포착" onClose={onDone}>
       <div className={styles.captureField}>
@@ -141,10 +157,18 @@ function CaptureModal({ isOpen, draft, onDraftChange, onDone }: CaptureModalProp
         />
       </div>
       <Button variant="primary" onClick={onDone}>
-        나중에 보기
+        {hasDraft ? '적어두고 계속하기' : '계속하기'}
       </Button>
     </BottomSheet>
   )
+}
+
+// SCREEN-FLOW P15 / SPEC §6 — "이탈 가능성 자체는 집중 화면에 조용히 고지되어, 사용자가 자리를
+// 비워도 된다는 걸 몰라 화면에 붙들려 있다고 느끼지 않게 한다." focus-gesture-hint.ts(최초 1회만)
+// 와는 다른 성격 — 여기는 상시 노출이라 별도 플래그로 게이팅하지 않는다. 오버레이가 떠 있는
+// 동안(isInteractive=false)엔 숨겨 시트 위에 겹쳐 보이지 않게 한다.
+function LeaveNotice() {
+  return <p className={styles.leaveNotice}>자리를 비워도 괜찮아요, 돌아오면 이어질게요</p>
 }
 
 export default function FocusPage() {
@@ -186,7 +210,7 @@ export default function FocusPage() {
   return (
     <div className={styles.page} data-mode={isDischargeBlock ? 'discharge' : 'focus'}>
       <DevSkipButton onSkip={() => finish(true)} />
-      <CountdownArea
+      <FocalZone
         activeBlock={activeBlock}
         elapsedSeconds={elapsedSeconds}
         isPaused={isPaused}
@@ -206,6 +230,7 @@ export default function FocusPage() {
         onDraftChange={setDraft}
         onDone={() => closeCapture(draft, setCapturedThought, setDraft, setIsCaptureOpen)}
       />
+      {isInteractive && <LeaveNotice />}
     </div>
   )
 }
