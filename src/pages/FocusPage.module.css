@@ -2,12 +2,19 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-7);
   min-height: 100svh;
   padding: var(--space-6);
   background-color: var(--surface-base);
+}
+
+/* 초점존 — 타이머는 남는 세로 공간을 위/아래 auto 마진으로 나눠 가지며 스스로 중앙에 앉는다
+   (OnboardingPage.module.css .focal과 동일 골격). 앵커존(.leaveNotice)은 이 auto 마진이 자유
+   공간을 전부 흡수하기 때문에 자기 마진 없이도 항상 뷰포트 최하단에 붙는다. */
+.focal {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 /* 개발 전용 스킵 버튼 — 프로덕션에서는 렌더되지 않는다(FocusPage.tsx import.meta.env.DEV 가드) */
@@ -53,4 +60,14 @@
 
 .captureField {
   margin-bottom: var(--space-5);
+}
+
+/* SCREEN-FLOW P15 — 저대비 상시 안내, 카운트다운을 가리거나 경쟁하지 않도록 작은 크기 유지.
+   앵커존 최상단이라 OnboardingPage .actions와 동일하게 위쪽에만 여백을 준다(padding-top). */
+.leaveNotice {
+  margin: 0;
+  padding-top: var(--space-6);
+  color: var(--text-quiet);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }

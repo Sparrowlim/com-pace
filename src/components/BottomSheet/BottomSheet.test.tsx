@@ -77,6 +77,53 @@ describe('BottomSheet', () => {
     expect(button).toHaveFocus()
   })
 
+  // iOS 확대 재발 조사(2026-07-18) — transitionend는 실기기에서 프레임 드랍 등으로 누락될 수
+  // 있다. 그 경로가 막히면 포커스가 영구히 안 걸리는 별도의 접근성 회귀가 생기므로, 트랜지션
+  // 시간보다 늦게 한 번 더 시도하는 안전망이 필요하다.
+  it('falls back to focusing after a timeout if transitionend never fires (dropped/missed event on a real device must not permanently block focus)', () => {
+    vi.useFakeTimers()
+    try {
+      render(
+        <BottomSheet isOpen={true} onClose={() => {}} label="딴생각 포착">
+          <button type="button">재개</button>
+        </BottomSheet>,
+      )
+      const button = screen.getByRole('button', { name: '재개' })
+      expect(button).not.toHaveFocus()
+
+      // transitionend를 절대 보내지 않는다 — 실기기의 드랍 상황을 흉내낸다.
+      vi.advanceTimersByTime(250)
+
+      expect(button).toHaveFocus()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not double-fire the fallback after transitionend already focused (no redundant focus call)', () => {
+    vi.useFakeTimers()
+    try {
+      render(
+        <BottomSheet isOpen={true} onClose={() => {}} label="딴생각 포착">
+          <button type="button">재개</button>
+          <button type="button">그만하기</button>
+        </BottomSheet>,
+      )
+      dispatchTransitionEnd(screen.getByRole('dialog'))
+      const first = screen.getByRole('button', { name: '재개' })
+      expect(first).toHaveFocus()
+
+      // 포커스를 다른 곳으로 옮긴 뒤 안전망 타이머가 그걸 다시 덮어쓰지 않는지 확인한다.
+      const second = screen.getByRole('button', { name: '그만하기' })
+      second.focus()
+      vi.advanceTimersByTime(250)
+
+      expect(second).toHaveFocus()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('traps Tab focus within the sheet', async () => {
     const user = userEvent.setup()
     render(
@@ -164,5 +211,43 @@ describe('BottomSheet', () => {
     expect(css).toMatch(
       /prefers-reduced-motion: reduce\)\s*\{\s*\.sheet\s*\{\s*transition-duration:\s*0s;/,
     )
+  })
+
+  // Finding #5 — 배경 스크림은 순수 시각 요소, 클릭으로 닫히지 않는다(명시적 액션만 닫기 유지).
+  describe('scrim (Finding #5)', () => {
+    it('renders a non-interactive scrim behind the sheet when open', () => {
+      const { container } = render(
+        <BottomSheet isOpen={true} onClose={() => {}} label="딴생각 포착">
+          <p>그만하기</p>
+        </BottomSheet>,
+      )
+      expect(css).toMatch(/\.scrim\s*\{[^}]*pointer-events:\s*none/)
+      expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+    })
+
+    it('clicking the scrim does not close the sheet', async () => {
+      const onClose = vi.fn()
+      const user = userEvent.setup()
+      const { container } = render(
+        <BottomSheet isOpen={true} onClose={onClose} label="딴생각 포착">
+          <p>그만하기</p>
+        </BottomSheet>,
+      )
+      const scrim = container.querySelector('[aria-hidden="true"]')
+      expect(scrim).toBeInTheDocument()
+
+      if (scrim) await user.click(scrim)
+
+      expect(onClose).not.toHaveBeenCalled()
+    })
+
+    it('renders no scrim when closed', () => {
+      const { container } = render(
+        <BottomSheet isOpen={false} onClose={() => {}} label="딴생각 포착">
+          <p>그만하기</p>
+        </BottomSheet>,
+      )
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
+    })
   })
 })

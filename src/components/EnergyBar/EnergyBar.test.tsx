@@ -36,6 +36,12 @@ describe('EnergyBar', () => {
     expect(queryByText(/오늘 0칸/)).not.toBeInTheDocument()
   })
 
+  it('exposes no accessible name when filledCount is 0 (스크린리더에도 "오늘 0칸" 누출 금지)', () => {
+    const { getByRole, queryByText } = render(<EnergyBar filledCount={0} />)
+    expect(getByRole('group')).not.toHaveAccessibleName()
+    expect(queryByText(/오늘 0칸/)).not.toBeInTheDocument()
+  })
+
   it('has no axe violations', async () => {
     const { container } = render(<EnergyBar filledCount={3} justFilledIndex={2} />)
     expect((await runAxe(container)).violations).toHaveLength(0)

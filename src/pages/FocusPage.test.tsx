@@ -372,7 +372,7 @@ describe('FocusPage — distraction capture (SPEC §6 5-A, single-slot)', () => 
     expect(useAppStore.getState().activeBlock?.status).toBe('in_progress')
   })
 
-  test('"나중에 보기" with text saves it as the captured thought and closes the modal', async () => {
+  test('with text: button label reflects the saved draft, and closing saves it as the captured thought', async () => {
     await seedActiveBlockWithPrediction()
     renderFocusPage()
     const user = userEvent.setup()
@@ -382,21 +382,57 @@ describe('FocusPage — distraction capture (SPEC §6 5-A, single-slot)', () => 
       await screen.findByLabelText('잠깐 스친 생각, 적어두고 다시 집중하세요'),
       '빨래도 해야지',
     )
-    await user.click(screen.getByRole('button', { name: '나중에 보기' }))
+    const doneButton = await screen.findByRole('button', { name: '적어두고 계속하기' })
+    await user.click(doneButton)
 
     expect(useAppStore.getState().capturedThought).toBe('빨래도 해야지')
     expect(screen.queryByRole('dialog', { name: '딴생각 포착' })).not.toBeInTheDocument()
   })
 
-  test('"나중에 보기" with empty text closes without saving anything', async () => {
+  test('with empty text: button label stays neutral, and closing saves nothing (Finding #3)', async () => {
     await seedActiveBlockWithPrediction()
     renderFocusPage()
     const user = userEvent.setup()
     await user.click(screen.getByText('책상 정리하기'))
 
-    await user.click(await screen.findByRole('button', { name: '나중에 보기' }))
+    await user.click(await screen.findByRole('button', { name: '계속하기' }))
 
     expect(useAppStore.getState().capturedThought).toBeNull()
+  })
+})
+
+// SCREEN-FLOW P15 / SPEC §6 — 상시 이탈 고지, 오버레이가 떠 있는 동안엔 숨겨야 시트와 안 겹친다.
+describe('FocusPage — leave notice (SCREEN-FLOW P15)', () => {
+  test('shows the quiet leave notice while the countdown is interactive', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+
+    expect(
+      await screen.findByText('자리를 비워도 괜찮아요, 돌아오면 이어질게요'),
+    ).toBeInTheDocument()
+  })
+
+  test('hides the leave notice while the pause overlay is open', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    await act(async () => {
+      await useAppStore.getState().pause()
+    })
+
+    expect(
+      screen.queryByText('자리를 비워도 괜찮아요, 돌아오면 이어질게요'),
+    ).not.toBeInTheDocument()
+  })
+
+  test('hides the leave notice while the capture modal is open', async () => {
+    await seedActiveBlockWithPrediction()
+    renderFocusPage()
+    const user = userEvent.setup()
+    await user.click(screen.getByText('책상 정리하기'))
+
+    expect(
+      screen.queryByText('자리를 비워도 괜찮아요, 돌아오면 이어질게요'),
+    ).not.toBeInTheDocument()
   })
 })
 

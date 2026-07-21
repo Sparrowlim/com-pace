@@ -1,5 +1,5 @@
 <!-- 자동 생성 파일 — 손으로 수정하지 말 것. .claude/hooks/update-repo-map.cjs가 Write 훅에서 재생성한다. -->
-<!-- 마지막 생성: 2026-07-18T08:29:43.240Z -->
+<!-- 마지막 생성: 2026-07-18T12:39:58.340Z -->
 
 ## src/
 ```
@@ -139,6 +139,10 @@ pages/
   SplitPage.module.css
   SplitPage.test.tsx
   SplitPage.tsx
+pwa/
+  register-update.test.ts
+  register-update.ts
+  reload-gate.ts
 routes/
   paths.ts
 storage/

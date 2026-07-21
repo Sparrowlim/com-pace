@@ -31,7 +31,6 @@ export function EnergyBar({ filledCount, justFilledIndex }: Props) {
         className={styles.bar}
         role="group"
         aria-labelledby={filledCount > 0 ? labelId : undefined}
-        aria-label={filledCount > 0 ? undefined : `오늘 ${filledCount}칸`}
       >
         {cells}
       </div>

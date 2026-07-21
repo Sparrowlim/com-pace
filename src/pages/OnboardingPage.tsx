@@ -52,6 +52,13 @@ export default function OnboardingPage() {
     setStep((prev) => (prev === 0 ? 1 : 2))
   }
 
+  // Finding #4 — 3화면 면죄부 온보딩에 되돌아갈 길이 없어, 다음 화면에서 이전 문구를 다시 보고
+  // 싶어도 앞으로만 갈 수 있었다. 화면 1(step 0)은 되돌아갈 곳이 없으니 버튼 자체를 안 그린다
+  // (없는 걸 표시하지 않는다 — 침묵 규칙과 같은 원칙).
+  function handlePrev() {
+    setStep((prev) => (prev === 2 ? 1 : 0))
+  }
+
   return (
     <div className={styles.page}>
       {/* 초점존 — 카드는 시각 콘텐츠만 담당, 흐름을 전진시키는 CTA는 앵커존으로 분리한다
@@ -65,6 +72,11 @@ export default function OnboardingPage() {
         <Button variant="primary" onClick={handleNext}>
           {current.cta}
         </Button>
+        {step > 0 && (
+          <Button variant="secondary" onClick={handlePrev}>
+            이전
+          </Button>
+        )}
       </div>
     </div>
   )
