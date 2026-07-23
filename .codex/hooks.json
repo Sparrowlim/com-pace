@@ -1,0 +1,59 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\guard-file-size.cjs'",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\format-on-write.cjs'",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\lint-on-write.cjs'",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\typecheck-on-write.cjs'",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\update-repo-map.cjs'",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'D:\\dev\\com-pace\\.codex\\hooks\\build-on-stop.cjs'",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
